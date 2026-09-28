@@ -1,0 +1,323 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   MBMT CASE TRACKER — Zurich / Bern Design System (from vayala13/viviana-ayala-portfolio)
+   Brand: pale plaster canvas with a fine stone grain. Palette taken
+   from understated Zurich dressing (navy wool, camel, charcoal, cream)
+   and Bern's old town (green-grey sandstone arcades, the turquoise
+   Aare, tiled roofs, the gilded Zytglogge). Precise 12-column grid.
+   Fonts: Inter Tight (display/body) + Cormorant Garamond italic (accent)
+   ============================================================ */
+
+@theme {
+  --color-plaster: #f8f6f2;
+  --color-limestone: #efece6;
+  --color-sand: #e0dbd2;
+  --color-ash: #6f695f; /* 5.0:1 on plaster, 4.6:1 on limestone (WCAG AA) */
+  --color-smoke: #5c5850;
+  --color-ink: #1d1c1a;
+
+  /* Material accents */
+  --color-navy: #1f2a3c;
+  --color-camel: #b8926a;
+  --color-sandstone: #a9a790;
+  --color-sandstone-light: #d9d6c6;
+  --color-aare: #3b8a86;
+  --color-roof: #9a4b32;
+  --color-gold: #c49a3a;
+
+  --font-sans: "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cormorant Garamond", ui-serif, Georgia, serif;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --radius: 0rem;
+
+  --background: #f8f6f2;
+  --foreground: #1d1c1a;
+  --card: #efece6;
+  --card-foreground: #1d1c1a;
+  --popover: #f8f6f2;
+  --popover-foreground: #1d1c1a;
+  --primary: #1d1c1a;
+  --primary-foreground: #f8f6f2;
+  --secondary: #efece6;
+  --secondary-foreground: #1d1c1a;
+  --muted: #efece6;
+  --muted-foreground: #8a847a;
+  --accent: #efece6;
+  --accent-foreground: #1d1c1a;
+  --destructive: #9b3b2e;
+  --destructive-foreground: #f8f6f2;
+  --border: #e0dbd2;
+  --input: #e0dbd2;
+  --ring: #1d1c1a;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-plaster text-ink font-sans;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Fine plaster grain over everything */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.22;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.4 0 0 0 0 0.35 0 0 0 0 0.3 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  ::selection {
+    background: #1d1c1a;
+    color: #f8f6f2;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  a[href],
+  select:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 3rem;
+      padding-right: 3rem;
+      max-width: 1320px;
+    }
+  }
+
+  /* Small uppercase label — the only "ornament" in the system */
+  .eyebrow {
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--color-ash);
+  }
+
+  /* Oversized, light display type */
+  .display {
+    font-weight: 200;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+  }
+
+  /* Buttons: square, quiet, deliberate */
+  .btn-solid,
+  .btn-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.95rem 1.75rem;
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
+  }
+  .btn-solid {
+    background: var(--color-navy);
+    color: var(--color-plaster);
+    border: 1px solid var(--color-navy);
+  }
+  .btn-solid:hover {
+    background: var(--color-aare);
+    border-color: var(--color-aare);
+  }
+  .btn-line {
+    border: 1px solid var(--color-sand);
+    color: var(--color-ink);
+  }
+  .btn-line:hover {
+    border-color: var(--color-ink);
+  }
+
+  /* Text link with a slow underline reveal */
+  .link-quiet {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 400ms ease;
+  }
+  .link-quiet:hover {
+    background-size: 100% 1px;
+  }
+
+  /* Surfaces */
+  .stone-card {
+    background: var(--color-limestone);
+    transition: background-color 500ms ease, transform 600ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  a.stone-card:hover {
+    background: #e8e2d7;
+    transform: translateY(-3px);
+  }
+
+  /* Visible 12-column grid guides, like a layout sheet */
+  .grid-guides {
+    background-image: repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent calc(100% / 12 - 1px),
+      rgba(31, 42, 60, 0.045) calc(100% / 12 - 1px),
+      rgba(31, 42, 60, 0.045) calc(100% / 12)
+    );
+  }
+
+  /* Skill bar */
+  .skill-bar-fill {
+    background: var(--color-navy);
+    transition: width 1.4s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  /* Slow fade — nothing bounces */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 1.1s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  /* Form fields: underline only */
+  .field {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid #8f897f; /* 3.2:1 — visible field boundary */
+    padding: 0.8rem 0;
+    font-size: 0.95rem;
+    font-weight: 300;
+    color: var(--color-ink);
+    transition: border-color 300ms ease;
+  }
+  .field::placeholder {
+    color: var(--color-ash);
+  }
+  .field:focus {
+    outline: none;
+    border-bottom-color: var(--color-ink);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up { animation: none; }
+  .skill-bar-fill { transition: none; }
+}
+
+/* ============================================================
+   MBMT CASE TRACKER — app-specific additions (PLAN.md §2)
+   ============================================================ */
+
+/* shadcn muted text (#8a847a) is 3.4:1 on plaster — use ash (5.0:1) instead */
+:root {
+  --muted-foreground: var(--color-ash);
+}
+
+@layer base {
+  /* Dense data app: soften grain so tables stay crisp */
+  body::before {
+    opacity: 0.12;
+  }
+}
+
+@layer components {
+  /* Status system — color is never the only signal; always pair with a text label + icon */
+  .status-overdue { border-left: 3px solid var(--color-roof); }
+  .status-soon    { border-left: 3px solid var(--color-gold); }  /* ≤ 7 days */
+  .status-ok      { border-left: 3px solid var(--color-aare); }
+  .status-stale   { border-left: 3px solid var(--color-camel); } /* > 1 yr untouched */
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.68rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .badge-overdue { color: var(--color-roof); }
+  /* Badge text shades are darkened versions of the status tokens so small text passes
+     WCAG AA on plaster, limestone AND the #e8e2d7 row hover (≥ 4.5:1 on all three).
+     PLAN.md suggested #8a6a1f for soon, but that is 4.28:1 on limestone cards;
+     raw aare text is 3.77:1 on plaster. The border/rail keeps the true token color. */
+  .badge-soon    { color: #7c5f1c; } /* darkened gold: 5.5 / 5.1 / 4.6 */
+  .badge-ok      { color: #2f6e6b; } /* darkened aare: 5.5 / 5.0 / 4.6 */
+  .badge-stale   { color: var(--color-smoke); } /* camel text fails AA; camel lives on the border */
+
+  /* Tables */
+  .data-row { border-bottom: 1px solid var(--color-sand); }
+  .data-row:hover { background: #e8e2d7; }
+}
+
+@layer components {
+  .btn-solid:disabled,
+  .btn-line:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-solid:disabled:hover {
+    background: var(--color-navy);
+    border-color: var(--color-navy);
+  }
+}

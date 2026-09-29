@@ -5,15 +5,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import CaseSelect from "@/components/CaseSelect";
 import { useApi } from "@/hooks/useApi";
 import { api, ApiError } from "@/lib/api";
 import { announceDataChanged } from "@/lib/dataEvents";
@@ -142,22 +134,6 @@ function LogCallDialog({
   // Clear an old "fill this in" message as soon as the form changes.
   useEffect(() => setError(null), [caseId, withWhom, summary]);
 
-  const openCases = (cases ?? [])
-    .filter(c => c.status !== "closed")
-    .sort((a, b) => a.caption.localeCompare(b.caption));
-  const groups = [
-    { label: "Active", rows: openCases.filter(c => c.status === "active") },
-    {
-      label: "Intake",
-      rows: openCases.filter(
-        c => c.status === "inquiry" || c.status === "consult"
-      ),
-    },
-    {
-      label: "Referred out",
-      rows: openCases.filter(c => c.status === "referred_out"),
-    },
-  ];
   const actionCount = toLines(actionItems).length;
 
   const submit = async (e: React.FormEvent) => {
@@ -237,28 +213,12 @@ function LogCallDialog({
               <label htmlFor="call-case" className="eyebrow">
                 Case
               </label>
-              <Select value={caseId} onValueChange={setCaseId}>
-                <SelectTrigger
-                  id="call-case"
-                  className="w-full mt-2 bg-plaster"
-                >
-                  <SelectValue placeholder="Choose a case" />
-                </SelectTrigger>
-                <SelectContent className="max-h-80">
-                  {groups
-                    .filter(g => g.rows.length)
-                    .map(g => (
-                      <SelectGroup key={g.label}>
-                        <SelectLabel className="eyebrow">{g.label}</SelectLabel>
-                        {g.rows.map(c => (
-                          <SelectItem key={c.id} value={String(c.id)}>
-                            {c.caption}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                </SelectContent>
-              </Select>
+              <CaseSelect
+                id="call-case"
+                cases={cases ?? []}
+                value={caseId}
+                onChange={setCaseId}
+              />
               {caseId && cases && (
                 <p className="text-xs text-ash mt-1">
                   {

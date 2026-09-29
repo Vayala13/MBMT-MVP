@@ -1,6 +1,7 @@
 import DemoBanner from "@/components/DemoBanner";
 import { IncomingCallProvider } from "@/components/IncomingCall";
 import { LogCallProvider } from "@/components/LogCallDialog";
+import { NewTaskProvider } from "@/components/NewTaskDialog";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { NAV_ITEMS } from "@/lib/nav";
@@ -13,15 +14,19 @@ import NotFound from "@/pages/NotFound";
 import PickUser from "@/pages/PickUser";
 import Placeholder from "@/pages/Placeholder";
 import Styleguide from "@/pages/Styleguide";
+import Templates from "@/pages/Templates";
+import Today from "@/pages/Today";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-const BUILT = ["/", "/cases"];
+const BUILT = ["/", "/cases", "/today", "/templates"];
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/today" component={Today} />
+      <Route path="/templates" component={Templates} />
       <Route path="/cases" component={Cases} />
       <Route path="/cases/:id">
         {params => <CaseDetail key={params.id} id={Number(params.id)} />}
@@ -45,9 +50,11 @@ function Gate() {
   if (!user) return <PickUser />;
   return (
     <LogCallProvider>
-      <IncomingCallProvider>
-        <Router />
-      </IncomingCallProvider>
+      <NewTaskProvider>
+        <IncomingCallProvider>
+          <Router />
+        </IncomingCallProvider>
+      </NewTaskProvider>
     </LogCallProvider>
   );
 }

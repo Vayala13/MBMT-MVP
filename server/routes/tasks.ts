@@ -1,4 +1,9 @@
-import { taskCreateSchema, taskPatchSchema } from "../../shared/schemas";
+import {
+  taskCreateSchema,
+  taskFromTemplateSchema,
+  taskPatchSchema,
+} from "../../shared/schemas";
+import { planFromTemplate } from "../../shared/templates";
 import { TASK_STATUSES, type TaskStatus } from "../../shared/enums";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { Router } from "express";
@@ -59,6 +64,62 @@ export function tasksRouter(db: Db) {
     res.json({ ...t, subtasks });
   });
 
+  // Creating a task from a template makes the parent plus every subtask,
+  // each due N days before the parent (weekends → the Friday before).
+  r.post("/from-template", (req, res) => {
+    const body = parseBody(taskFromTemplateSchema, req.body);
+    const user = currentUser(res);
+    const created = db.transaction(tx => {
+      mustGetCase(tx, body.caseId);
+      checkUserRef(tx, body.assignedTo);
+      const template = tx
+        .select()
+        .from(taskTemplates)
+        .where(eq(taskTemplates.id, body.templateId))
+        .get();
+      if (!template)
+        throw new HttpError(400, `Template ${body.templateId} not found`);
+      const assignedTo = body.assignedTo ?? user.id;
+      const priority = body.priority ?? 1;
+      const parent = tx
+        .insert(tasks)
+        .values({
+          caseId: body.caseId,
+          title: body.title ?? template.name,
+          assignedTo,
+          dueDate: body.dueDate,
+          priority,
+          templateId: template.id,
+        })
+        .returning()
+        .get();
+      const subtasks = planFromTemplate(template.subtasks, body.dueDate).map(
+        s =>
+          tx
+            .insert(tasks)
+            .values({
+              caseId: body.caseId,
+              parentTaskId: parent.id,
+              title: s.title,
+              assignedTo,
+              dueDate: s.dueDate,
+              priority,
+              templateId: template.id,
+            })
+            .returning()
+            .get()
+      );
+      recordActivity(tx, {
+        caseId: body.caseId,
+        userId: user.id,
+        action: "added task from template",
+        detail: `${parent.title} · ${subtasks.length} subtasks`,
+      });
+      return { ...parent, subtasks };
+    });
+    res.status(201).json(created);
+  });
+
   r.post("/", (req, res) => {
     const body = parseBody(taskCreateSchema, req.body);
     const user = currentUser(res);
@@ -96,6 +157,17 @@ export function tasksRouter(db: Db) {
       if (!Object.keys(body).length) return before;
       checkUserRef(tx, body.assignedTo);
       checkTemplateRef(tx, body.templateId);
+      const start =
+        body.scheduledStart !== undefined
+          ? body.scheduledStart
+          : before.scheduledStart;
+      const end =
+        body.scheduledEnd !== undefined
+          ? body.scheduledEnd
+          : before.scheduledEnd;
+      if (start && end && end <= start) {
+        throw new HttpError(400, "A time block must end after it starts");
+      }
       if (body.parentTaskId === id)
         throw new HttpError(400, "A task cannot be its own parent");
       if (body.parentTaskId != null) {

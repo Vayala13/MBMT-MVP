@@ -7,6 +7,7 @@
  */
 import { addDays, format, getDay, subDays } from "date-fns";
 import type { TemplateSubtask } from "../../shared/enums";
+import { planFromTemplate } from "../../shared/templates";
 import type { Db } from "./client";
 import {
   activity,
@@ -698,13 +699,13 @@ export function seed(db: Db, today: Date = new Date()) {
       priority: 1,
       templateId: tpl["MSJ Reply"],
     });
-    for (const s of msjTemplate.subtasks) {
+    for (const s of planFromTemplate(msjTemplate.subtasks, msjReplyDue)) {
       addTask({
         caseId: c.quillfeather,
         parentTaskId: msjParent,
         title: s.title,
         assignedTo: u.paraB,
-        dueDate: dayOf(msjReplyDue, -s.offset_days_before_due),
+        dueDate: s.dueDate,
         priority: 1,
         templateId: tpl["MSJ Reply"],
       });

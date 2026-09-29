@@ -183,7 +183,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
    - *Motion to Compel*: review discovery responses for objections/omissions, draft motion, cite-check, attorney review, file.
    - *Deposition Outline*: gather petition/answer/discovery/client docs, draft outline, attorney review.
    - *Default Judgment*, *Answer to Petition*: placeholder subtasks, marked "needs staff input."
-3. Creating a task from a template auto-creates the subtasks with due dates offset from the parent due date.
+3. Creating a task from a template auto-creates the subtasks with due dates offset from the parent due date. *(Decided: a subtask that lands on a weekend moves to the Friday before. Staff can edit any date.)*
 4. Add a **"cite-check" subtask to every drafting template by default**. Firm policy: nothing reaches an attorney without it.
 - **Done when:** creating "MSJ Reply" due in 10 days creates all subtasks with correct dates (Vitest covers the offset math).
 

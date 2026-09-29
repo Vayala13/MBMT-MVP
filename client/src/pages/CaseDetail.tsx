@@ -2,6 +2,7 @@ import AddNoteForm from "@/components/AddNoteForm";
 import AppShell from "@/components/AppShell";
 import DeadlineDateDialog from "@/components/DeadlineDateDialog";
 import { useLogCall } from "@/components/LogCallDialog";
+import { useNewTask } from "@/components/NewTaskDialog";
 import StatusBadge from "@/components/StatusBadge";
 import { useApi } from "@/hooks/useApi";
 import { announceDataChanged } from "@/lib/dataEvents";
@@ -35,6 +36,7 @@ import {
   Flag,
   ListTodo,
   Phone,
+  Plus,
   PhoneIncoming,
   PhoneOutgoing,
 } from "lucide-react";
@@ -377,6 +379,7 @@ function CallRows({
 export default function CaseDetail({ id }: { id: number }) {
   const today = useMemo(() => startOfDay(new Date()), []);
   const { openLogCall } = useLogCall();
+  const { openNewTask } = useNewTask();
   const [moving, setMoving] = useState<Deadline | null>(null);
 
   const kase = useApi<Case>(`/cases/${id}`);
@@ -512,6 +515,21 @@ export default function CaseDetail({ id }: { id: number }) {
               id="tasks-title"
               label="Tasks"
               title={`${openTasks} open task${openTasks === 1 ? "" : "s"}`}
+
+              action={
+                <button
+                  type="button"
+                  className="btn-line"
+                  onClick={() => openNewTask({ caseId: c.id })}
+                >
+                  <Plus
+                    className="size-3.5"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />{" "}
+                  New task
+                </button>
+              }
             >
               {tasks.data ? (
                 <TaskRows

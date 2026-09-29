@@ -19,7 +19,7 @@ export class ApiError extends Error {
 
 export async function api<T>(
   path: string,
-  init: { method?: "GET" | "POST" | "PATCH"; body?: unknown } = {}
+  init: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown } = {}
 ): Promise<T> {
   const res = await fetch(`/api${path}`, {
     method: init.method ?? "GET",
@@ -29,7 +29,7 @@ export async function api<T>(
     },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
   });
-  const data = await res.json().catch(() => ({}));
+  const data = res.status === 204 ? {} : await res.json().catch(() => ({}));
   if (!res.ok)
     throw new ApiError(res.status, data.error ?? res.statusText, data.details);
   return data as T;

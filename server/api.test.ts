@@ -36,7 +36,10 @@ async function api(
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  return { status: res.status, json: await res.json() };
+  return {
+    status: res.status,
+    json: res.status === 204 ? null : await res.json(),
+  };
 }
 
 describe("reads", () => {
@@ -248,6 +251,109 @@ describe("writes", () => {
     expect(r.status).toBe(201);
     const [latest] = (await api("GET", "/activity?limit=1")).json;
     expect(latest).toMatchObject({ caseId: null, action: "created template" });
+  });
+});
+
+describe("templates", () => {
+  it("creating a task from MSJ Reply makes the parent and 6 dated subtasks", async () => {
+    const templates = (await api("GET", "/templates")).json as {
+      id: number;
+      name: string;
+    }[];
+    const msj = templates.find(t => t.name === "MSJ Reply")!;
+    const r = await api("POST", "/tasks/from-template", {
+      caseId: 2,
+      templateId: msj.id,
+      dueDate: "2026-10-09", // Fri
+    });
+    expect(r.status).toBe(201);
+    expect(r.json).toMatchObject({
+      title: "MSJ Reply",
+      dueDate: "2026-10-09",
+      assignedTo: PARALEGAL,
+      templateId: msj.id,
+    });
+    expect(r.json.subtasks.map((s: { dueDate: string }) => s.dueDate)).toEqual([
+      "2026-10-01",
+      "2026-10-02",
+      "2026-10-05",
+      "2026-10-07",
+      "2026-10-08",
+      "2026-10-09",
+    ]);
+    expect(
+      r.json.subtasks.every(
+        (s: { parentTaskId: number }) => s.parentTaskId === r.json.id
+      )
+    ).toBe(true);
+    const [latest] = (await api("GET", "/activity?caseId=2&limit=1")).json;
+    expect(latest).toMatchObject({
+      action: "added task from template",
+      detail: "MSJ Reply · 6 subtasks",
+    });
+  });
+
+  it("adds a cite-check to any drafting template that lacks one", async () => {
+    const r = await api("POST", "/templates", {
+      name: "Response to Motion",
+      subtasks: [
+        { title: "Draft response", offset_days_before_due: 5 },
+        { title: "File", offset_days_before_due: 0 },
+      ],
+    });
+    expect(r.json.citeCheckAdded).toBe(true);
+    expect(r.json.subtasks.map((s: { title: string }) => s.title)).toEqual([
+      "Draft response",
+      "Cite-check every authority",
+      "File",
+    ]);
+    const edit = await api("PATCH", `/templates/${r.json.id}`, {
+      subtasks: [{ title: "Draft brief", offset_days_before_due: 4 }],
+    });
+    expect(edit.json.citeCheckAdded).toBe(true);
+  });
+
+  it("deletes a template but keeps tasks made from it", async () => {
+    const t = (
+      await api("POST", "/templates", {
+        name: "Temp",
+        subtasks: [{ title: "Step", offset_days_before_due: 1 }],
+      })
+    ).json;
+    const made = (
+      await api("POST", "/tasks/from-template", {
+        caseId: 1,
+        templateId: t.id,
+        dueDate: "2026-11-02",
+      })
+    ).json;
+    expect((await api("DELETE", `/templates/${t.id}`)).status).toBe(204);
+    expect((await api("GET", `/templates/${t.id}`)).status).toBe(404);
+    const kept = (await api("GET", `/tasks/${made.id}`)).json;
+    expect(kept).toMatchObject({ title: "Temp", templateId: null });
+    expect(kept.subtasks).toHaveLength(1);
+  });
+});
+
+describe("time blocks", () => {
+  it("rejects a block that ends before it starts", async () => {
+    const t = (await api("POST", "/tasks", { caseId: 1, title: "Block me" }))
+      .json;
+    const bad = await api("PATCH", `/tasks/${t.id}`, {
+      scheduledDate: "2026-10-01",
+      scheduledStart: "10:00",
+      scheduledEnd: "09:30",
+    });
+    expect(bad.status).toBe(400);
+    const ok = await api("PATCH", `/tasks/${t.id}`, {
+      scheduledDate: "2026-10-01",
+      scheduledStart: "09:00",
+      scheduledEnd: "11:00",
+    });
+    expect(ok.json).toMatchObject({
+      scheduledStart: "09:00",
+      scheduledEnd: "11:00",
+    });
   });
 });
 

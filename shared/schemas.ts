@@ -63,6 +63,17 @@ export const taskPatchSchema = taskFields
   .partial()
   .extend({ status: z.enum(TASK_STATUSES).optional() });
 
+/** Parent task + dated subtasks from a template. */
+export const taskFromTemplateSchema = z.object({
+  caseId: id,
+  templateId: id,
+  dueDate: isoDate,
+  assignedTo: id.nullish(),
+  /** Defaults to the template name. */
+  title: z.string().trim().min(1).optional(),
+  priority: z.number().int().min(1).max(3).optional(),
+});
+
 // ---- Call logs
 /** One entry per line: key points, action items. */
 const lines = z.array(z.string().trim().min(1)).max(20);

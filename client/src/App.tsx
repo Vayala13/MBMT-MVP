@@ -1,4 +1,5 @@
 import DemoBanner from "@/components/DemoBanner";
+import { IncomingCallProvider } from "@/components/IncomingCall";
 import { LogCallProvider } from "@/components/LogCallDialog";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -44,7 +45,9 @@ function Gate() {
   if (!user) return <PickUser />;
   return (
     <LogCallProvider>
-      <Router />
+      <IncomingCallProvider>
+        <Router />
+      </IncomingCallProvider>
     </LogCallProvider>
   );
 }

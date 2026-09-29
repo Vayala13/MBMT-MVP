@@ -91,7 +91,16 @@ export type CallLog = {
   withWhom: string;
   summary: string;
   followUpNeeded: boolean;
+  keyPoints: string[];
+  actionItems: string[];
+  transcript: string | null;
   createdAt: string;
+};
+
+/** POST /api/call-logs response: the call plus any tasks it created. */
+export type CallLogCreated = CallLog & {
+  followUpTaskId: number | null;
+  actionItemTaskIds: number[];
 };
 
 export type Note = {

@@ -807,6 +807,11 @@ export function seed(db: Db, today: Date = new Date()) {
       summary:
         "Asked about the mediation date. Explained the process and what to bring.",
       followUpNeeded: false,
+      keyPoints: [
+        "Client wants to know how long mediation lasts",
+        "Prefers email over phone for scheduling",
+      ],
+      actionItems: ["Email client the mediation checklist"],
       createdAt: ago(1),
     });
     addCall({

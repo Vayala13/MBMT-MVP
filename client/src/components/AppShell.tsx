@@ -1,9 +1,10 @@
+import { useIncomingCall } from "@/components/IncomingCall";
 import { useLogCall } from "@/components/LogCallDialog";
 import { NAV_ITEMS } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@shared/enums";
-import { Palette, Phone } from "lucide-react";
+import { FlaskConical, Palette, Phone } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 function NavLink({
@@ -43,6 +44,7 @@ export default function AppShell({
 }) {
   const { user, switchUser } = useSession();
   const { openLogCall } = useLogCall();
+  const { simulateIncomingCall } = useIncomingCall();
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 bg-navy text-plaster flex flex-col sticky top-0 h-[calc(100vh-2.25rem)] z-10">
@@ -69,6 +71,18 @@ export default function AppShell({
             <kbd className="font-sans text-[0.65rem] tracking-normal border border-plaster/30 px-1.5 py-0.5 text-sandstone-light">
               C
             </kbd>
+          </button>
+          <button
+            type="button"
+            onClick={simulateIncomingCall}
+            className="mt-2 w-full flex items-center gap-2 px-1 py-1.5 text-xs text-sandstone-light hover:text-plaster transition-colors duration-300"
+          >
+            <FlaskConical
+              className="size-3.5"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            Simulate incoming call
           </button>
         </div>
         <nav aria-label="Main" className="flex flex-col gap-0.5">

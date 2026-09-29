@@ -173,6 +173,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 3. Sections: Deadlines (with change history shown inline, e.g. "moved from 10/2 → 10/16 · Rule 11 agreement") · Tasks (expandable subtasks) · **Call log** · Notes · Activity timeline.
 4. **Quick "Log a call" button**, reachable from anywhere (sidebar plus keyboard shortcut `C`): pick case, in/out, with whom, summary, follow-up checkbox. If follow-up is checked, it auto-creates a task.
 5. **Edit deadline date** requires a reason (dropdown incl. "Rule 11 agreement", "Court order", "Other") and writes to `deadline_changes`.
+6. *(Added after Phase 3 review)* The call log also captures **key points**, **action items** (each can become a task for the caller, due next business day) and an optional **pasted transcript**. A **"Simulate incoming call"** practice pop-up (fake numbers, demo cases) lets testers try an Answer → End call → pre-filled log flow. It is clearly labeled as simulated: no phone is connected.
 - **Done when:** logging a call on case A updates its "last touched" line and shows on the dashboard drawer.
 
 ### Phase 4: Today view + task templates (≈ 2.5 hr)
@@ -230,6 +231,8 @@ Collect answers to: *What would you use tomorrow? What's missing? What would you
 | Claude usage-limit / character-limit helper | Separate tool. Get the exact limits from Joseph first |
 | Real auth (SSO/passwords), hosting, backups | Decide after the pilot |
 | Email/Teams notifications | Staff ignore Microsoft reminders today, so in-app first |
+| Real phone integration: incoming-call pop-up with caller ID, answer in the browser | The firm has older office phones. Ask Jesse what the system is (plain phone lines, an office phone system with brand/model, or already internet-based). Full version needs an internet (VoIP) phone service, usually keeping the same number and a monthly per-user fee. Plain lines could instead get a caller-ID device for a pop-up only (no answering or recording). |
+| Call recording, automatic transcripts, AI key points and action items | Needs a recording (VoIP only), Tomas's sign-off on recording consent (laws differ by state; some require everyone on the call to agree), and a security review before privileged audio goes to any outside transcription or AI service |
 
 ---
 

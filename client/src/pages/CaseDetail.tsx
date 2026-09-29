@@ -33,6 +33,7 @@ import {
   ChevronRight,
   Circle,
   Flag,
+  ListTodo,
   Phone,
   PhoneIncoming,
   PhoneOutgoing,
@@ -307,7 +308,51 @@ function CallRows({
                 {c.direction === "in" ? "Call from" : "Call to"} {c.withWhom}
               </div>
               <p className="text-sm text-smoke mt-0.5">{c.summary}</p>
-              <div className="text-xs text-ash mt-1">
+              {(c.keyPoints.length > 0 || c.actionItems.length > 0) && (
+                <div className="grid grid-cols-2 gap-6 mt-3">
+                  {c.keyPoints.length > 0 && (
+                    <div>
+                      <div className="eyebrow mb-1.5">Key points</div>
+                      <ul className="space-y-1 text-sm text-smoke list-disc pl-4 marker:text-ash">
+                        {c.keyPoints.map((k, i) => (
+                          <li key={i}>{k}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {c.actionItems.length > 0 && (
+                    <div>
+                      <div className="eyebrow mb-1.5">Action items</div>
+                      <ul className="space-y-1 text-sm text-smoke">
+                        {c.actionItems.map((a, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <ListTodo
+                              className="size-3.5 mt-0.5 shrink-0 text-ash"
+                              strokeWidth={1.5}
+                              aria-hidden="true"
+                            />
+                            {a}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+              {c.transcript && (
+                <details className="mt-3 group">
+                  <summary className="link-quiet text-xs text-ink cursor-pointer w-fit list-none">
+                    <span className="group-open:hidden">Show transcript</span>
+                    <span className="hidden group-open:inline">
+                      Hide transcript
+                    </span>
+                  </summary>
+                  <pre className="mt-2 whitespace-pre-wrap font-sans text-sm leading-relaxed text-smoke stone-card p-4">
+                    {c.transcript}
+                  </pre>
+                </details>
+              )}
+              <div className="text-xs text-ash mt-2">
                 {userById.get(c.userId)?.name} · {fmtDate(c.createdAt)} ·{" "}
                 {timeAgo(c.createdAt)}
               </div>
@@ -429,7 +474,7 @@ export default function CaseDetail({ id }: { id: number }) {
             <button
               type="button"
               className="btn-solid"
-              onClick={() => openLogCall(c.id)}
+              onClick={() => openLogCall({ caseId: c.id })}
             >
               <Phone
                 className="size-3.5"
@@ -487,7 +532,7 @@ export default function CaseDetail({ id }: { id: number }) {
                 <button
                   type="button"
                   className="btn-line"
-                  onClick={() => openLogCall(c.id)}
+                  onClick={() => openLogCall({ caseId: c.id })}
                 >
                   <Phone
                     className="size-3.5"

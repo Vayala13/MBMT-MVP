@@ -64,14 +64,27 @@ export const taskPatchSchema = taskFields
   .extend({ status: z.enum(TASK_STATUSES).optional() });
 
 // ---- Call logs
-export const callLogCreateSchema = z.object({
+/** One entry per line: key points, action items. */
+const lines = z.array(z.string().trim().min(1)).max(20);
+
+const callLogFields = z.object({
   caseId: id,
   direction: z.enum(CALL_DIRECTIONS),
   withWhom: text,
   summary: text,
-  followUpNeeded: z.boolean().default(false),
+  followUpNeeded: z.boolean(),
+  keyPoints: lines,
+  actionItems: lines,
+  transcript: z.string().trim().max(50_000).nullish(),
 });
-export const callLogPatchSchema = callLogCreateSchema
+export const callLogCreateSchema = callLogFields.extend({
+  followUpNeeded: z.boolean().default(false),
+  keyPoints: lines.default([]),
+  actionItems: lines.default([]),
+  /** Create one task per action item (assigned to the caller). */
+  actionItemsToTasks: z.boolean().default(true),
+});
+export const callLogPatchSchema = callLogFields
   .omit({ caseId: true })
   .partial();
 

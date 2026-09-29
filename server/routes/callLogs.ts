@@ -25,7 +25,10 @@ export function callLogsRouter(db: Db) {
   });
 
   r.post("/", (req, res) => {
-    const body = parseBody(callLogCreateSchema, req.body);
+    const { actionItemsToTasks, ...body } = parseBody(
+      callLogCreateSchema,
+      req.body
+    );
     const user = currentUser(res);
     const created = db.transaction(tx => {
       mustGetCase(tx, body.caseId);
@@ -38,18 +41,17 @@ export function callLogsRouter(db: Db) {
         })
         .returning()
         .get();
-      // Follow-up checked → a task for the caller, due the next business day.
-      let followUpTaskId: number | null = null;
-      if (row.followUpNeeded) {
-        const title = `Follow up: call with ${row.withWhom}`;
-        followUpTaskId = tx
+      // Tasks created from the call go to the caller, due the next business day.
+      const due = ymd(nextBusinessDay(new Date()));
+      const addTask = (title: string, priority: number) => {
+        const taskId = tx
           .insert(tasks)
           .values({
             caseId: row.caseId,
             title,
             assignedTo: user.id,
-            dueDate: ymd(nextBusinessDay(new Date())),
-            priority: 1,
+            dueDate: due,
+            priority,
           })
           .returning({ id: tasks.id })
           .get().id;
@@ -59,15 +61,30 @@ export function callLogsRouter(db: Db) {
           action: "added task",
           detail: title,
         });
-      }
+        return taskId;
+      };
+      const followUpTaskId = row.followUpNeeded
+        ? addTask(`Follow up: call with ${row.withWhom}`, 1)
+        : null;
+      const actionItemTaskIds = actionItemsToTasks
+        ? row.actionItems.map(item => addTask(item, 2))
+        : [];
       // Logged last so the case reads "Last touched by … · logged call".
       recordActivity(tx, {
         caseId: row.caseId,
         userId: user.id,
         action: "logged call",
-        detail: `${row.direction === "in" ? "Call from" : "Call to"} ${row.withWhom}${row.followUpNeeded ? " · follow-up needed" : ""}`,
+        detail: [
+          `${row.direction === "in" ? "Call from" : "Call to"} ${row.withWhom}`,
+          row.followUpNeeded ? "follow-up needed" : "",
+          row.actionItems.length
+            ? `${row.actionItems.length} action item${row.actionItems.length === 1 ? "" : "s"}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" · "),
       });
-      return { ...row, followUpTaskId };
+      return { ...row, followUpTaskId, actionItemTaskIds };
     });
     res.status(201).json(created);
   });

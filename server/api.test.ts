@@ -141,6 +141,48 @@ describe("writes", () => {
     expect(plain.json.followUpTaskId).toBeNull();
   });
 
+  it("saves key points, action items and a transcript; action items become tasks", async () => {
+    const r = await api("POST", "/call-logs", {
+      caseId: 5,
+      direction: "in",
+      withWhom: "Client (fictional)",
+      summary: "Discussed expert report timing",
+      keyPoints: ["Expert report is late", "Client prefers email"],
+      actionItems: ["Email expert for status", "Send client the report draft"],
+      transcript: "Paralegal: Hello.\nClient: Hi.",
+    });
+    expect(r.status).toBe(201);
+    expect(r.json).toMatchObject({
+      keyPoints: ["Expert report is late", "Client prefers email"],
+      actionItems: ["Email expert for status", "Send client the report draft"],
+      transcript: "Paralegal: Hello.\nClient: Hi.",
+      followUpTaskId: null,
+    });
+    expect(r.json.actionItemTaskIds).toHaveLength(2);
+    const t = (await api("GET", `/tasks/${r.json.actionItemTaskIds[1]}`)).json;
+    expect(t).toMatchObject({
+      caseId: 5,
+      title: "Send client the report draft",
+      assignedTo: PARALEGAL,
+    });
+    const [latest] = (await api("GET", "/activity?caseId=5&limit=1")).json;
+    expect(latest).toMatchObject({ action: "logged call" });
+    expect(latest.detail).toContain("2 action items");
+  });
+
+  it("can keep action items as notes only (no tasks)", async () => {
+    const r = await api("POST", "/call-logs", {
+      caseId: 5,
+      direction: "out",
+      withWhom: "Court clerk (fictional)",
+      summary: "Checked hearing date",
+      actionItems: ["Maybe call back Friday"],
+      actionItemsToTasks: false,
+    });
+    expect(r.json.actionItemTaskIds).toEqual([]);
+    expect(r.json.actionItems).toEqual(["Maybe call back Friday"]);
+  });
+
   it("moving a deadline date requires a reason and records the change", async () => {
     const d = (
       await api("POST", "/deadlines", {

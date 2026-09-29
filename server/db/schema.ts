@@ -150,6 +150,16 @@ export const callLogs = sqliteTable(
     followUpNeeded: integer("follow_up_needed", { mode: "boolean" })
       .notNull()
       .default(false),
+    // Typed (or pasted) after the call. Real phone recording/transcription is parked for v2.
+    keyPoints: text("key_points", { mode: "json" })
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'`),
+    actionItems: text("action_items", { mode: "json" })
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'`),
+    transcript: text("transcript"),
     createdAt: text("created_at").notNull().default(now),
   },
   t => [index("call_logs_case_idx").on(t.caseId)]

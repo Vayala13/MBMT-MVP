@@ -1,4 +1,4 @@
-import { addDays, format, getDay, isSameMonth, parseISO } from "date-fns";
+import { addDays, format, getDay, parseISO } from "date-fns";
 import { daysUntil, deadlineStatus, isStale, type Status } from "./status";
 import type { Case, Deadline, Task } from "./types";
 
@@ -122,16 +122,23 @@ export type PendingItem =
 
 export type PendingGroup = { caseId: number; items: PendingItem[] };
 
-/** Open tasks and deadlines due in today's calendar month, grouped by case (earliest first). */
-export function monthPending(
+/** Rolling window for the "pending" section (decided over a calendar month, which runs dry at month end). */
+export const PENDING_DAYS = 30;
+
+/**
+ * Open tasks and deadlines due in the next 30 days (today + 29), plus anything
+ * already overdue, grouped by case (earliest first).
+ */
+export function upcomingPending(
   tasks: Task[],
   deadlines: Deadline[],
-  today: Date
+  today: Date,
+  days = PENDING_DAYS
 ): PendingGroup[] {
-  const inMonth = (ymd: string) => isSameMonth(toDate(ymd), today);
+  const inWindow = (ymd: string) => daysUntil(toDate(ymd), today) < days;
   const items: PendingItem[] = [
     ...deadlines
-      .filter(d => isOpenDeadline(d) && inMonth(d.dueDate))
+      .filter(d => isOpenDeadline(d) && inWindow(d.dueDate))
       .map(d => ({
         kind: "deadline" as const,
         item: d,
@@ -139,7 +146,7 @@ export function monthPending(
         status: deadlineStatus(toDate(d.dueDate), today),
       })),
     ...tasks
-      .filter(t => isOpenTask(t) && t.dueDate !== null && inMonth(t.dueDate))
+      .filter(t => isOpenTask(t) && t.dueDate !== null && inWindow(t.dueDate))
       .map(t => ({
         kind: "task" as const,
         item: t,

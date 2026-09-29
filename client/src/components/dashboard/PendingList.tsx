@@ -1,13 +1,13 @@
 import StatusBadge from "@/components/StatusBadge";
 import { fmtDay } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { PendingGroup } from "@shared/dashboard";
+import { PENDING_DAYS, type PendingGroup } from "@shared/dashboard";
 import type { Case, User } from "@shared/types";
-import { format } from "date-fns";
+import { addDays, format } from "date-fns";
 import { CalendarClock, ListTodo } from "lucide-react";
 import type { DrawerItem } from "./types";
 
-export default function MonthPending({
+export default function PendingList({
   groups,
   today,
   caseById,
@@ -24,7 +24,8 @@ export default function MonthPending({
   return (
     <section aria-labelledby="month-title">
       <div className="eyebrow mb-2">
-        This month pending · {format(today, "MMMM yyyy")}
+        Pending · next {PENDING_DAYS} days + overdue · through{" "}
+        {format(addDays(today, PENDING_DAYS - 1), "MMM d")}
       </div>
       <h2 id="month-title" className="display text-3xl text-ink mb-5">
         {count} open item{count === 1 ? "" : "s"} across {groups.length} case

@@ -20,7 +20,7 @@ import {
   users,
 } from "./schema";
 
-type UserKey = "attorney" | "paraA" | "paraB" | "clerk" | "admin";
+type UserKey = "attorney" | "paraA" | "paraB" | "clerk" | "admin" | "attorney2";
 type NewCase = typeof cases.$inferInsert;
 type NewActivity = typeof activity.$inferInsert;
 
@@ -30,6 +30,8 @@ export const SEED_USERS: Record<UserKey, typeof users.$inferInsert> = {
   paraB: { name: "Juniper Oakes", role: "paralegal", initials: "JO" },
   clerk: { name: "Wren Tolliver", role: "file_clerk", initials: "WT" },
   admin: { name: "Cass Ironwood", role: "admin", initials: "CI" },
+  // Added last so existing ids stay stable; gives the attorney filter something to filter.
+  attorney2: { name: "Augustin Fairleigh", role: "attorney", initials: "AF" },
 };
 
 /** Cite-check is firm policy on every drafting template: nothing reaches an attorney without it. */
@@ -414,6 +416,19 @@ const CLOSED: SeedCase[] = [
 
 export const SEED_CASES = [...ACTIVE, ...INTAKE, ...CLOSED];
 
+/** Cases led by the second attorney; the rest (non-inquiry) go to Octavia Fernsby. */
+const FAIRLEIGH_CASES = new Set([
+  "marchbank",
+  "oddsworth",
+  "brindle",
+  "nettlefield",
+  "merriweather",
+  "kettleby",
+  "pennywhistle",
+  "wexley",
+  "muncaster",
+]);
+
 export function seed(db: Db, today: Date = new Date()) {
   const ymd = (d: Date) => format(d, "yyyy-MM-dd");
   /** A weekday `n` days from today (weekends slide toward today's side so overdue stays overdue). */
@@ -471,7 +486,12 @@ export function seed(db: Db, today: Date = new Date()) {
         .insert(cases)
         .values({
           ...row,
-          leadAttorneyId: row.status === "inquiry" ? null : u.attorney,
+          leadAttorneyId:
+            row.status === "inquiry"
+              ? null
+              : FAIRLEIGH_CASES.has(key)
+                ? u.attorney2
+                : u.attorney,
           openedAt: ymd(subDays(today, openedDaysAgo)),
           lastTouchedAt: ago(touchAgo),
           lastTouchedBy: u[who],

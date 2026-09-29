@@ -21,14 +21,11 @@ describe.each(DAYS)("seed(today = %s)", today => {
   const allDeadlines = db.select().from(deadlines).all();
   const count = (s: string) => allCases.filter(c => c.status === s).length;
 
-  it("has 5 users covering every role", () => {
-    const roles = new Set(
-      db
-        .select()
-        .from(users)
-        .all()
-        .map(u => u.role)
-    );
+  it("has 6 users covering every role, with 2 attorneys", () => {
+    const all = db.select().from(users).all();
+    expect(all).toHaveLength(6);
+    expect(all.filter(u => u.role === "attorney")).toHaveLength(2);
+    const roles = new Set(all.map(u => u.role));
     expect(roles).toEqual(
       new Set(["attorney", "paralegal", "file_clerk", "admin"])
     );
@@ -80,6 +77,11 @@ describe.each(DAYS)("seed(today = %s)", today => {
     for (const d of allDeadlines.filter(d => !d.doneAt)) {
       expect([0, 6]).not.toContain(getDay(parseISO(d.dueDate)));
     }
+  });
+
+  it("splits lead attorney duties between both attorneys", () => {
+    const leads = new Set(allCases.map(c => c.leadAttorneyId).filter(Boolean));
+    expect(leads.size).toBe(2);
   });
 
   it("uses obviously fictional cause numbers", () => {

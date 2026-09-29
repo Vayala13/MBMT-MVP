@@ -41,7 +41,7 @@ async function api(
 
 describe("reads", () => {
   it("returns seeded users, cases, deadlines, tasks, templates", async () => {
-    expect((await api("GET", "/users")).json).toHaveLength(5);
+    expect((await api("GET", "/users")).json).toHaveLength(6);
     expect((await api("GET", "/cases")).json).toHaveLength(25);
     expect((await api("GET", "/cases?status=active")).json).toHaveLength(15);
     expect((await api("GET", "/deadlines")).json).toHaveLength(18);

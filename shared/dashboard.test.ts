@@ -3,7 +3,7 @@ import {
   buildStrip,
   countdown,
   metrics,
-  monthPending,
+  upcomingPending,
   shortCaption,
   staleCases,
 } from "./dashboard";
@@ -157,26 +157,28 @@ describe("metrics", () => {
   });
 });
 
-describe("monthPending", () => {
-  it("groups this month's open items by case, earliest first", () => {
-    const groups = monthPending(
+describe("upcomingPending", () => {
+  it("groups open items due in the next 30 days (plus overdue) by case, earliest first", () => {
+    const groups = upcomingPending(
       [
         task("2026-09-30", { caseId: 2 }),
-        task("2026-10-01", { caseId: 2 }),
+        task("2026-10-28", { caseId: 2 }), // day 29: last day in the window
+        task("2026-10-29", { caseId: 2 }), // day 30: outside
         task("2026-09-10", { caseId: 1, status: "done" }),
       ],
       [
         deadline("2026-09-28", { caseId: 1 }),
         deadline("2026-09-30", { caseId: 2 }),
-        deadline("2026-08-31", { caseId: 3 }),
+        deadline("2026-08-31", { caseId: 3 }), // long overdue: still pending
       ],
       today
     );
     expect(
       groups.map(g => [g.caseId, g.items.map(i => `${i.kind}:${i.dueDate}`)])
     ).toEqual([
+      [3, ["deadline:2026-08-31"]],
       [1, ["deadline:2026-09-28"]],
-      [2, ["deadline:2026-09-30", "task:2026-09-30"]],
+      [2, ["deadline:2026-09-30", "task:2026-09-30", "task:2026-10-28"]],
     ]);
     expect(groups[0].items[0].status).toBe("overdue");
   });

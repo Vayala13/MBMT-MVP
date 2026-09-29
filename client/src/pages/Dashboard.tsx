@@ -3,7 +3,7 @@ import CountdownList from "@/components/dashboard/CountdownList";
 import DeadlineStrip from "@/components/dashboard/DeadlineStrip";
 import ItemDrawer from "@/components/dashboard/ItemDrawer";
 import MetricRow from "@/components/dashboard/MetricRow";
-import MonthPending from "@/components/dashboard/MonthPending";
+import PendingList from "@/components/dashboard/PendingList";
 import StaleCases from "@/components/dashboard/StaleCases";
 import type { DrawerItem } from "@/components/dashboard/types";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -12,7 +12,7 @@ import {
   buildStrip,
   countdown,
   metrics,
-  monthPending,
+  upcomingPending,
   staleCases,
 } from "@shared/dashboard";
 import { format, startOfDay } from "date-fns";
@@ -31,7 +31,7 @@ export default function Dashboard() {
       strip: buildStrip(data.deadlines, today),
       countdown: rows,
       stale: staleCases(data.cases, today),
-      month: monthPending(data.tasks, data.deadlines, today),
+      month: upcomingPending(data.tasks, data.deadlines, today),
       overdueDeadlines: data.deadlines.filter(
         d => !d.doneAt && d.dueDate < format(today, "yyyy-MM-dd")
       ).length,
@@ -94,7 +94,7 @@ export default function Dashboard() {
                 />
               </div>
             </div>
-            <MonthPending
+            <PendingList
               groups={view.month}
               today={today}
               caseById={data.caseById}

@@ -54,10 +54,7 @@
       "indexes": {
         "activity_case_idx": {
           "name": "activity_case_idx",
-          "columns": [
-            "case_id",
-            "created_at"
-          ],
+          "columns": ["case_id", "created_at"],
           "isUnique": false
         }
       },
@@ -66,12 +63,8 @@
           "name": "activity_case_id_cases_id_fk",
           "tableFrom": "activity",
           "tableTo": "cases",
-          "columnsFrom": [
-            "case_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["case_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -79,12 +72,8 @@
           "name": "activity_user_id_users_id_fk",
           "tableFrom": "activity",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -158,9 +147,7 @@
       "indexes": {
         "call_logs_case_idx": {
           "name": "call_logs_case_idx",
-          "columns": [
-            "case_id"
-          ],
+          "columns": ["case_id"],
           "isUnique": false
         }
       },
@@ -169,12 +156,8 @@
           "name": "call_logs_case_id_cases_id_fk",
           "tableFrom": "call_logs",
           "tableTo": "cases",
-          "columnsFrom": [
-            "case_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["case_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -182,12 +165,8 @@
           "name": "call_logs_user_id_users_id_fk",
           "tableFrom": "call_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -281,9 +260,7 @@
       "indexes": {
         "cases_status_idx": {
           "name": "cases_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -292,12 +269,8 @@
           "name": "cases_lead_attorney_id_users_id_fk",
           "tableFrom": "cases",
           "tableTo": "users",
-          "columnsFrom": [
-            "lead_attorney_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lead_attorney_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -305,12 +278,8 @@
           "name": "cases_last_touched_by_users_id_fk",
           "tableFrom": "cases",
           "tableTo": "users",
-          "columnsFrom": [
-            "last_touched_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["last_touched_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -379,12 +348,8 @@
           "name": "deadline_changes_deadline_id_deadlines_id_fk",
           "tableFrom": "deadline_changes",
           "tableTo": "deadlines",
-          "columnsFrom": [
-            "deadline_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["deadline_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -392,12 +357,8 @@
           "name": "deadline_changes_changed_by_users_id_fk",
           "tableFrom": "deadline_changes",
           "tableTo": "users",
-          "columnsFrom": [
-            "changed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["changed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -469,16 +430,12 @@
       "indexes": {
         "deadlines_case_idx": {
           "name": "deadlines_case_idx",
-          "columns": [
-            "case_id"
-          ],
+          "columns": ["case_id"],
           "isUnique": false
         },
         "deadlines_due_idx": {
           "name": "deadlines_due_idx",
-          "columns": [
-            "due_date"
-          ],
+          "columns": ["due_date"],
           "isUnique": false
         }
       },
@@ -487,12 +444,8 @@
           "name": "deadlines_case_id_cases_id_fk",
           "tableFrom": "deadlines",
           "tableTo": "cases",
-          "columnsFrom": [
-            "case_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["case_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -500,12 +453,8 @@
           "name": "deadlines_assigned_to_users_id_fk",
           "tableFrom": "deadlines",
           "tableTo": "users",
-          "columnsFrom": [
-            "assigned_to"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_to"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -564,9 +513,7 @@
       "indexes": {
         "notes_case_idx": {
           "name": "notes_case_idx",
-          "columns": [
-            "case_id"
-          ],
+          "columns": ["case_id"],
           "isUnique": false
         }
       },
@@ -575,12 +522,8 @@
           "name": "notes_case_id_cases_id_fk",
           "tableFrom": "notes",
           "tableTo": "cases",
-          "columnsFrom": [
-            "case_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["case_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -588,12 +531,8 @@
           "name": "notes_task_id_tasks_id_fk",
           "tableFrom": "notes",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -601,12 +540,8 @@
           "name": "notes_user_id_users_id_fk",
           "tableFrom": "notes",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -739,16 +674,12 @@
       "indexes": {
         "tasks_case_idx": {
           "name": "tasks_case_idx",
-          "columns": [
-            "case_id"
-          ],
+          "columns": ["case_id"],
           "isUnique": false
         },
         "tasks_parent_idx": {
           "name": "tasks_parent_idx",
-          "columns": [
-            "parent_task_id"
-          ],
+          "columns": ["parent_task_id"],
           "isUnique": false
         }
       },
@@ -757,12 +688,8 @@
           "name": "tasks_case_id_cases_id_fk",
           "tableFrom": "tasks",
           "tableTo": "cases",
-          "columnsFrom": [
-            "case_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["case_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -770,12 +697,8 @@
           "name": "tasks_parent_task_id_tasks_id_fk",
           "tableFrom": "tasks",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "parent_task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_task_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -783,12 +706,8 @@
           "name": "tasks_assigned_to_users_id_fk",
           "tableFrom": "tasks",
           "tableTo": "users",
-          "columnsFrom": [
-            "assigned_to"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["assigned_to"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -796,12 +715,8 @@
           "name": "tasks_template_id_task_templates_id_fk",
           "tableFrom": "tasks",
           "tableTo": "task_templates",
-          "columnsFrom": [
-            "template_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["template_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

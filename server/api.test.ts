@@ -357,6 +357,75 @@ describe("time blocks", () => {
   });
 });
 
+describe("delegation", () => {
+  it("reassigning a task moves it between people's work lists and logs who → who", async () => {
+    const t = (
+      await api("POST", "/tasks", {
+        caseId: 6,
+        title: "Hand me off",
+        assignedTo: 2,
+      })
+    ).json;
+    const pipBefore = (await api("GET", "/tasks?assignedTo=2&status=open")).json
+      .length;
+    const junBefore = (await api("GET", "/tasks?assignedTo=3&status=open")).json
+      .length;
+
+    const r = await api("PATCH", `/tasks/${t.id}`, {
+      assignedTo: 3,
+      dueDate: "2030-02-01",
+    });
+    expect(r.json).toMatchObject({ assignedTo: 3, dueDate: "2030-02-01" });
+    expect(
+      (await api("GET", "/tasks?assignedTo=2&status=open")).json
+    ).toHaveLength(pipBefore - 1);
+    expect(
+      (await api("GET", "/tasks?assignedTo=3&status=open")).json
+    ).toHaveLength(junBefore + 1);
+
+    const recent = (await api("GET", "/activity?caseId=6&limit=2")).json.map(
+      (a: { action: string; detail: string }) => `${a.action}: ${a.detail}`
+    );
+    expect(recent).toEqual(
+      expect.arrayContaining([
+        "reassigned task: Hand me off: Pip Marlowe → Juniper Oakes",
+        "changed task due date: Hand me off: no date → 2/1",
+      ])
+    );
+  });
+
+  it("reassigning a deadline logs who → who", async () => {
+    const d = (
+      await api("POST", "/deadlines", {
+        caseId: 6,
+        title: "Hand-off deadline",
+        kind: "internal",
+        dueDate: "2030-03-01",
+        assignedTo: 2,
+      })
+    ).json;
+    await api("PATCH", `/deadlines/${d.id}`, { assignedTo: 1 });
+    const [latest] = (await api("GET", "/activity?caseId=6&limit=1")).json;
+    expect(latest).toMatchObject({
+      action: "reassigned deadline",
+      detail: "Hand-off deadline: Pip Marlowe → Octavia Fernsby",
+    });
+  });
+
+  it("planning a task on the day planner doesn't touch the case", async () => {
+    const t = (await api("POST", "/tasks", { caseId: 7, title: "Plan me" }))
+      .json;
+    const before = (await api("GET", "/cases/7")).json.lastTouchedAt;
+    await new Promise(r => setTimeout(r, 5));
+    await api("PATCH", `/tasks/${t.id}`, {
+      scheduledDate: "2030-01-01",
+      scheduledStart: "09:00",
+      scheduledEnd: "10:00",
+    });
+    expect((await api("GET", "/cases/7")).json.lastTouchedAt).toBe(before);
+  });
+});
+
 describe("no-op edits", () => {
   it("do not log activity or bump last touched", async () => {
     const before = (await api("GET", "/cases/13")).json;

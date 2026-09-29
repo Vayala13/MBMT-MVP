@@ -7,6 +7,7 @@ import PendingList from "@/components/dashboard/PendingList";
 import StaleCases from "@/components/dashboard/StaleCases";
 import type { DrawerItem } from "@/components/dashboard/types";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useMyWork } from "@/lib/myWork";
 import { useSession } from "@/lib/session";
 import {
   buildStrip,
@@ -16,6 +17,7 @@ import {
   staleCases,
 } from "@shared/dashboard";
 import { format, startOfDay } from "date-fns";
+import { UserCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 
 export default function Dashboard() {
@@ -24,19 +26,32 @@ export default function Dashboard() {
   const [drawer, setDrawer] = useState<DrawerItem | null>(null);
   const today = useMemo(() => startOfDay(new Date()), []);
 
-  const view = useMemo(() => {
-    const rows = countdown(data.deadlines, today);
+  // "My work": only my deadlines/tasks, and only cases I'm on.
+  const { myWork, caseIds } = useMyWork();
+  const filtering = myWork && user !== null;
+  const scoped = useMemo(() => {
+    if (!filtering || !user) return data;
     return {
-      metrics: metrics(data.cases, data.tasks, today),
-      strip: buildStrip(data.deadlines, today),
+      ...data,
+      cases: data.cases.filter(c => caseIds?.has(c.id)),
+      deadlines: data.deadlines.filter(d => d.assignedTo === user.id),
+      tasks: data.tasks.filter(t => t.assignedTo === user.id),
+    };
+  }, [data, filtering, caseIds, user]);
+
+  const view = useMemo(() => {
+    const rows = countdown(scoped.deadlines, today);
+    return {
+      metrics: metrics(scoped.cases, scoped.tasks, today),
+      strip: buildStrip(scoped.deadlines, today),
       countdown: rows,
-      stale: staleCases(data.cases, today),
-      month: upcomingPending(data.tasks, data.deadlines, today),
-      overdueDeadlines: data.deadlines.filter(
+      stale: staleCases(scoped.cases, today),
+      month: upcomingPending(scoped.tasks, scoped.deadlines, today),
+      overdueDeadlines: scoped.deadlines.filter(
         d => !d.doneAt && d.dueDate < format(today, "yyyy-MM-dd")
       ).length,
     };
-  }, [data.cases, data.deadlines, data.tasks, today]);
+  }, [scoped, today]);
 
   const soon = view.strip
     .slice(0, 8)
@@ -52,6 +67,17 @@ export default function Dashboard() {
               ? `Good ${new Date().getHours() < 12 ? "morning" : "afternoon"}, ${user.name.split(" ")[0]}.`
               : "Dashboard"}
           </h1>
+          {filtering && (
+            <p className="text-sm text-smoke mt-3 flex items-center gap-2">
+              <UserCheck
+                className="size-4"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              My work is on: only your deadlines, tasks and cases. Turn it off
+              in the top bar to see the whole firm.
+            </p>
+          )}
           {data.ready && (
             <p className="font-serif italic text-2xl text-smoke mt-3">
               {view.overdueDeadlines} overdue · {soon} due in the next 7 days ·{" "}

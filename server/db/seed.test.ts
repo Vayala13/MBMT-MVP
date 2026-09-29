@@ -2,7 +2,7 @@ import { deadlineStatus, isStale } from "@shared/status";
 import { getDay, parseISO } from "date-fns";
 import { describe, expect, it } from "vitest";
 import { openDb } from "./client";
-import { cases, deadlineChanges, deadlines, users } from "./schema";
+import { cases, deadlineChanges, deadlines, tasks, users } from "./schema";
 import { seed } from "./seed";
 
 // Seed against several weekdays so the relative-date logic holds all week.
@@ -82,6 +82,20 @@ describe.each(DAYS)("seed(today = %s)", today => {
   it("splits lead attorney duties between both attorneys", () => {
     const leads = new Set(allCases.map(c => c.leadAttorneyId).filter(Boolean));
     expect(leads.size).toBe(2);
+  });
+
+  it("gives every user at least one open task (no empty Today page)", () => {
+    const open = db
+      .select()
+      .from(tasks)
+      .all()
+      .filter(t => t.status === "open");
+    for (const u of db.select().from(users).all()) {
+      expect(
+        open.some(t => t.assignedTo === u.id),
+        u.name
+      ).toBe(true);
+    }
   });
 
   it("uses obviously fictional cause numbers", () => {

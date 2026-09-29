@@ -3,9 +3,10 @@ import {
   buildStrip,
   countdown,
   metrics,
-  upcomingPending,
+  myCaseIds,
   shortCaption,
   staleCases,
+  upcomingPending,
 } from "./dashboard";
 import type { Case, Deadline, Task } from "./types";
 
@@ -196,5 +197,27 @@ describe("shortCaption", () => {
       "Wickersham"
     );
     expect(shortCaption("Estate of Ambrose Figwort")).toBe("Ambrose");
+  });
+});
+
+describe("myCaseIds (My work)", () => {
+  it("includes cases I lead and cases where I have open work", () => {
+    const led = kase({ leadAttorneyId: 9 });
+    const other = kase({});
+    const ids = myCaseIds(
+      9,
+      [led, other, kase({})],
+      [
+        task(null, { caseId: other.id, assignedTo: 9 }),
+        task(null, { caseId: 777, assignedTo: 9, status: "done" }),
+      ],
+      [
+        deadline("2026-10-01", { caseId: 555, assignedTo: 9 }),
+        deadline("2026-10-01", { caseId: 666, assignedTo: 9, doneAt: "x" }),
+      ]
+    );
+    expect([...ids].sort((a, b) => a - b)).toEqual(
+      [led.id, other.id, 555].sort((a, b) => a - b)
+    );
   });
 });

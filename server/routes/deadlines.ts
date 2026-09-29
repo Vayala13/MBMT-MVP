@@ -14,6 +14,7 @@ import {
   mustGetCase,
   mustGetDeadline,
   shortDate,
+  userName,
 } from "../lib/lookups";
 
 export function deadlinesRouter(db: Db) {
@@ -154,7 +155,25 @@ export function deadlinesRouter(db: Db) {
           detail: before.title,
         });
       }
-      const otherFields = Object.keys(fields).filter(k => k !== "dueDate");
+      if (
+        fields.assignedTo !== undefined &&
+        fields.assignedTo !== before.assignedTo
+      ) {
+        recordActivity(tx, {
+          caseId: before.caseId,
+          userId: user.id,
+          action: "reassigned deadline",
+          detail: `${before.title}: ${userName(tx, before.assignedTo)} → ${userName(tx, fields.assignedTo)}`,
+        });
+      }
+      const otherFields = (
+        Object.keys(fields) as (keyof typeof fields)[]
+      ).filter(
+        k =>
+          k !== "dueDate" &&
+          k !== "assignedTo" &&
+          fields[k] !== before[k as keyof typeof before]
+      );
       if (otherFields.length) {
         recordActivity(tx, {
           caseId: before.caseId,

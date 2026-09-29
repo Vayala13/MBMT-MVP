@@ -1,10 +1,12 @@
 import { useIncomingCall } from "@/components/IncomingCall";
+import ReminderBanner from "@/components/ReminderBanner";
 import { useLogCall } from "@/components/LogCallDialog";
+import { useMyWork } from "@/lib/myWork";
 import { NAV_ITEMS } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@shared/enums";
-import { FlaskConical, Palette, Phone } from "lucide-react";
+import { FlaskConical, Palette, Phone, UserCheck } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 function NavLink({
@@ -45,6 +47,7 @@ export default function AppShell({
   const { user, switchUser } = useSession();
   const { openLogCall } = useLogCall();
   const { simulateIncomingCall } = useIncomingCall();
+  const { myWork, setMyWork } = useMyWork();
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 bg-navy text-plaster flex flex-col sticky top-0 h-[calc(100vh-2.25rem)] z-10">
@@ -99,30 +102,56 @@ export default function AppShell({
         <header className="h-16 border-b border-sand flex items-center justify-between px-10 bg-plaster">
           <div className="eyebrow">{title}</div>
           {user && (
-            <div className="flex items-center gap-3">
-              <div className="text-right leading-tight">
-                <div className="text-sm text-ink">{user.name}</div>
-                <div className="text-xs text-ash">
-                  {ROLE_LABELS[user.role]} ·{" "}
-                  <button
-                    type="button"
-                    onClick={switchUser}
-                    className="link-quiet text-ash hover:text-ink"
-                  >
-                    Switch user
-                  </button>
-                </div>
-              </div>
-              <div
-                aria-hidden="true"
-                className="size-9 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em]"
+            <div className="flex items-center gap-6">
+              <button
+                type="button"
+                aria-pressed={myWork}
+                onClick={() => setMyWork(!myWork)}
+                title="Show only cases, tasks and deadlines that are yours"
+                className={cn(
+                  "inline-flex items-center gap-2 border px-3 py-1.5 text-[0.68rem] tracking-[0.2em] uppercase transition-colors duration-300",
+                  myWork
+                    ? "bg-navy border-navy text-plaster"
+                    : "border-sand text-smoke hover:border-ink hover:text-ink"
+                )}
               >
-                {user.initials}
+                <UserCheck
+                  className="size-3.5"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                My work {myWork ? "· on" : "· off"}
+              </button>
+              <div className="flex items-center gap-3">
+                <div className="text-right leading-tight">
+                  <div className="text-sm text-ink">{user.name}</div>
+                  <div className="text-xs text-ash">
+                    {ROLE_LABELS[user.role]} ·{" "}
+                    <button
+                      type="button"
+                      onClick={switchUser}
+                      className="link-quiet text-ash hover:text-ink"
+                    >
+                      Switch user
+                    </button>
+                  </div>
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="size-9 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em]"
+                >
+                  {user.initials}
+                </div>
               </div>
             </div>
           )}
         </header>
-        <main className="flex-1 px-10 pt-12 pb-24">{children}</main>
+        <main className="flex-1 px-10 pt-12 pb-24">
+          <div className="max-w-[1180px]">
+            <ReminderBanner />
+          </div>
+          {children}
+        </main>
       </div>
     </div>
   );

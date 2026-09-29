@@ -11,12 +11,13 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApi } from "@/hooks/useApi";
 import { timeAgo } from "@/lib/format";
+import { useMyWork } from "@/lib/myWork";
 import { cn } from "@/lib/utils";
 import { CASE_STATUS_LABELS, type CaseStatus } from "@shared/enums";
 import { isStale } from "@shared/status";
 import type { Case, User } from "@shared/types";
 import { parseISO } from "date-fns";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, UserCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "wouter";
 
@@ -47,7 +48,11 @@ export default function Cases() {
   const stale = (c: Case) => isStale(parseISO(c.lastTouchedAt), today);
 
   const current = TABS.find(t => t.id === tab)!;
-  const inTab = (cases ?? []).filter(c => current.statuses.includes(c.status));
+  const { myWork, caseIds } = useMyWork();
+  const mineOnly = (c: Case) => !myWork || Boolean(caseIds?.has(c.id));
+  const inTab = (cases ?? []).filter(
+    c => current.statuses.includes(c.status) && mineOnly(c)
+  );
   const types = [...new Set(inTab.map(c => c.caseType))].sort();
 
   const rows = inTab
@@ -72,6 +77,16 @@ export default function Cases() {
         <p className="font-serif italic text-2xl text-smoke mb-10">
           Replaces the case list and active cases spreadsheets.
         </p>
+        {myWork && (
+          <p className="text-sm text-smoke -mt-6 mb-8 flex items-center gap-2">
+            <UserCheck
+              className="size-4"
+              strokeWidth={1.5}
+              aria-hidden="true"
+            />
+            My work is on: only cases you lead or have open work on.
+          </p>
+        )}
 
         <Tabs
           value={tab}
@@ -82,8 +97,8 @@ export default function Cases() {
         >
           <TabsList className="bg-transparent p-0 h-auto w-full justify-start gap-8 border-b border-sand">
             {TABS.map(t => {
-              const n = (cases ?? []).filter(c =>
-                t.statuses.includes(c.status)
+              const n = (cases ?? []).filter(
+                c => t.statuses.includes(c.status) && mineOnly(c)
               ).length;
               return (
                 <TabsTrigger

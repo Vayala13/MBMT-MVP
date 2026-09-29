@@ -175,3 +175,22 @@ export function shortCaption(caption: string): string {
     .replace(/^(Estate of|In re|Matter of)\s+/i, "");
   return head.split(/\s+/)[0].replace(/[,.]$/, "");
 }
+
+/**
+ * "My work": the cases a person is on, meaning they lead it, or they have an
+ * open task or open deadline assigned to them there.
+ */
+export function myCaseIds(
+  userId: number,
+  cases: Case[],
+  tasks: Task[],
+  deadlines: Deadline[]
+): Set<number> {
+  const ids = new Set<number>();
+  for (const c of cases) if (c.leadAttorneyId === userId) ids.add(c.id);
+  for (const t of tasks)
+    if (t.assignedTo === userId && t.status === "open") ids.add(t.caseId);
+  for (const d of deadlines)
+    if (d.assignedTo === userId && !d.doneAt) ids.add(d.caseId);
+  return ids;
+}

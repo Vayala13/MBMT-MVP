@@ -153,7 +153,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 
 ### Phase 1: Data + access gate (≈ 1.5 hr)
 1. Drizzle schema, migrations, `seed.ts`, and a `pnpm db:reset` script.
-2. REST routes: `GET/POST/PATCH` for cases, deadlines, tasks, call_logs, notes, templates. Every write inserts an `activity` row and updates `cases.last_touched_*`.
+2. REST routes: `GET/POST/PATCH` for cases, deadlines, tasks, call_logs, notes, templates. Every write inserts an `activity` row and updates `cases.last_touched_*`. *(Exception, decided in Phase 5: moving a task on your own day planner is personal planning, so it writes no activity and does not count as touching the case. Otherwise "Plan my day" would make stale cases look active.)*
 3. **Proprietary acknowledgment screen** on first load. It says the info is proprietary and privileged and must stay inside the firm. The user must click "I acknowledge" (stored per session). Then a **role/user picker** replaces real login for the MVP.
 4. Add a persistent footer banner: "Prototype — demo data only."
 - **Done when:** the app boots through the gate, the picker sets the user, and the API returns seeded data.
@@ -188,7 +188,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 - **Done when:** creating "MSJ Reply" due in 10 days creates all subtasks with correct dates (Vitest covers the offset math).
 
 ### Phase 5: Calendar + delegation + access view (≈ 2 hr)
-1. **Calendar:** 3-week grid by default (toggle 1 / 3 / month). Filter by person. Deadlines and scheduled tasks are both shown.
+1. **Calendar:** 3-week grid by default (toggle 1 / 3 / month). Filter by person. Deadlines and scheduled tasks are both shown. *(The 3-week view always runs through today + 20 days, padded to whole Mon–Sun weeks, so the third-week Monday is never cut off.)*
 2. **Delegation:** assign or reassign any task/deadline, and set an individual due date. "My work" filter across all pages.
 3. **Team & Access** page: read-only matrix of role × permission (view cases, edit deadlines, delete, manage templates, admin). Mark each item "proposed, confirm with Jesse/Tomas."
 4. In-app **reminder banner** on load: "You have N deadlines in the next 7 days, M overdue." No email or push in the MVP.

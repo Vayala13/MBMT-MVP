@@ -1,6 +1,8 @@
 import AddNoteForm from "@/components/AddNoteForm";
 import AppShell from "@/components/AppShell";
 import DeadlineDateDialog from "@/components/DeadlineDateDialog";
+import ItemDrawer from "@/components/dashboard/ItemDrawer";
+import type { DrawerItem } from "@/components/dashboard/types";
 import { useLogCall } from "@/components/LogCallDialog";
 import { useNewTask } from "@/components/NewTaskDialog";
 import StatusBadge from "@/components/StatusBadge";
@@ -81,11 +83,13 @@ function DeadlineRows({
   today,
   userById,
   onMove,
+  onOpen,
 }: {
   rows: DeadlineWithChanges[];
   today: Date;
   userById: Map<number, User>;
   onMove: (d: Deadline) => void;
+  onOpen: (item: DrawerItem) => void;
 }) {
   if (rows.length === 0) return <Empty>No deadlines on this case.</Empty>;
   return (
@@ -106,14 +110,23 @@ function DeadlineRows({
           >
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <div
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpen({
+                      kind: "deadline",
+                      id: d.id,
+                      caseId: d.caseId,
+                      title: d.title,
+                    })
+                  }
                   className={cn(
-                    "text-sm",
+                    "text-sm text-left link-quiet",
                     d.doneAt ? "text-ash line-through" : "text-ink"
                   )}
                 >
                   {d.title}
-                </div>
+                </button>
                 <div className="text-xs text-ash mt-0.5">
                   {fmtDay(d.dueDate)} · {DEADLINE_KIND_LABELS[d.kind]}
                   {who ? ` · ${who}` : ""}
@@ -182,10 +195,12 @@ function TaskRows({
   tasks,
   today,
   userById,
+  onOpen,
 }: {
   tasks: Task[];
   today: Date;
   userById: Map<number, User>;
+  onOpen: (item: DrawerItem) => void;
 }) {
   const [open, setOpen] = useState<Set<number>>(new Set());
   const top = tasks.filter(t => t.parentTaskId === null);
@@ -212,14 +227,23 @@ function TaskRows({
           aria-label={t.status}
         />
         <div className="flex-1 min-w-0">
-          <div
+          <button
+            type="button"
+            onClick={() =>
+              onOpen({
+                kind: "task",
+                id: t.id,
+                caseId: t.caseId,
+                title: t.title,
+              })
+            }
             className={cn(
-              "text-sm",
+              "text-sm text-left link-quiet",
               t.status === "done" ? "text-ash line-through" : "text-ink"
             )}
           >
             {t.title}
-          </div>
+          </button>
           <div className="text-xs text-ash mt-0.5">
             {t.dueDate ? fmtDay(t.dueDate) : "No due date"} · P{t.priority}
             {who ? ` · ${who}` : ""}
@@ -381,6 +405,7 @@ export default function CaseDetail({ id }: { id: number }) {
   const { openLogCall } = useLogCall();
   const { openNewTask } = useNewTask();
   const [moving, setMoving] = useState<Deadline | null>(null);
+  const [drawer, setDrawer] = useState<DrawerItem | null>(null);
 
   const kase = useApi<Case>(`/cases/${id}`);
   const deadlines = useApi<DeadlineWithChanges[]>(
@@ -505,6 +530,7 @@ export default function CaseDetail({ id }: { id: number }) {
                   today={today}
                   userById={userById}
                   onMove={setMoving}
+                  onOpen={setDrawer}
                 />
               ) : (
                 <p className="text-sm text-ash">Loading…</p>
@@ -536,6 +562,7 @@ export default function CaseDetail({ id }: { id: number }) {
                   tasks={tasks.data}
                   today={today}
                   userById={userById}
+                  onOpen={setDrawer}
                 />
               ) : (
                 <p className="text-sm text-ash">Loading…</p>
@@ -618,6 +645,14 @@ export default function CaseDetail({ id }: { id: number }) {
       <DeadlineDateDialog
         deadline={moving}
         onOpenChange={open => !open && setMoving(null)}
+      />
+      <ItemDrawer
+        item={drawer}
+        today={today}
+        caseById={new Map([[c.id, c]])}
+        userById={userById}
+        onClose={() => setDrawer(null)}
+        onChanged={() => {}}
       />
     </AppShell>
   );

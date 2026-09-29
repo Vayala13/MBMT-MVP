@@ -37,3 +37,12 @@ export function shortDate(iso: string) {
   const [, m, d] = iso.split("-");
   return `${Number(m)}/${Number(d)}`;
 }
+
+/** Display name for activity text ("unassigned" for null). */
+export function userName(db: Db | Tx, id: number | null | undefined): string {
+  if (id == null) return "unassigned";
+  return (
+    db.select({ name: users.name }).from(users).where(eq(users.id, id)).get()
+      ?.name ?? `user ${id}`
+  );
+}

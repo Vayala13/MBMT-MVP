@@ -787,6 +787,72 @@ export function seed(db: Db, today: Date = new Date()) {
       dueDate: due(1),
       priority: 2,
     });
+    // Attorneys and IT admin get work too, so every Today page has something.
+    // None are overdue, so the dashboard's "3 overdue tasks" stays the same.
+    addTask({
+      caseId: c.quillfeather,
+      title: "Review MSJ reply draft before cite-check",
+      assignedTo: u.attorney,
+      dueDate: dayOf(msjReplyDue, -3),
+      priority: 1,
+    });
+    addTask({
+      caseId: c.pemberton,
+      title: "Prepare mediation position summary",
+      assignedTo: u.attorney,
+      dueDate: due(7),
+      priority: 1,
+    });
+    addTask({
+      caseId: c.fennimore,
+      title: "Review and sign answer",
+      assignedTo: u.attorney,
+      dueDate: due(4),
+      priority: 1,
+    });
+    addTask({
+      caseId: c.thistlewood,
+      title: "Decide on pretrial exhibit list",
+      assignedTo: u.attorney,
+      dueDate: ymd(today),
+      priority: 2,
+    });
+    addTask({
+      caseId: c.nettlefield,
+      title: "Outline argument for motion to dismiss hearing",
+      assignedTo: u.attorney2,
+      dueDate: due(2),
+      priority: 1,
+    });
+    addTask({
+      caseId: c.marchbank,
+      title: "Approve Rule 11 letter to opposing counsel",
+      assignedTo: u.attorney2,
+      dueDate: ymd(today),
+      priority: 1,
+    });
+    addTask({
+      caseId: c.oddsworth,
+      title: "Pick replacement expert if report stays late",
+      assignedTo: u.attorney2,
+      dueDate: due(5),
+      priority: 2,
+    });
+    addTask({
+      caseId: c.brindle,
+      title: "Set up shared folder for inspection photos",
+      assignedTo: u.admin,
+      dueDate: due(1),
+      priority: 2,
+    });
+    addTask({
+      caseId: c.grimsby,
+      title: "Recover archived email attachments",
+      assignedTo: u.admin,
+      dueDate: due(3),
+      priority: 3,
+    });
+
     // Done
     addTask({
       caseId: c.pemberton,

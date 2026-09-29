@@ -12,7 +12,13 @@ import { tasks, taskTemplates } from "../db/schema";
 import { recordActivity } from "../lib/activity";
 import { currentUser } from "../lib/currentUser";
 import { HttpError, idParam, intQuery, parseBody, strQuery } from "../lib/http";
-import { checkUserRef, mustGetCase, mustGetTask } from "../lib/lookups";
+import {
+  checkUserRef,
+  mustGetCase,
+  mustGetTask,
+  shortDate,
+  userName,
+} from "../lib/lookups";
 
 function checkTemplateRef(tx: Tx, id: number | null | undefined) {
   if (id == null) return;
@@ -180,22 +186,52 @@ export function tasksRouter(db: Db) {
         }
       }
       tx.update(tasks).set(body).where(eq(tasks.id, id)).run();
-      const action =
-        body.status === "done" && before.status !== "done"
-          ? "completed task"
-          : body.status === "open" && before.status === "done"
-            ? "reopened task"
-            : "updated task";
-      const detail =
-        action === "updated task"
-          ? `${before.title} · changed ${Object.keys(body).join(", ")}`
-          : before.title;
-      recordActivity(tx, {
-        caseId: before.caseId,
-        userId: user.id,
-        action,
-        detail,
-      });
+
+      // One clear activity line per kind of change. Moving a task around your
+      // own day planner is personal planning, not case work: no activity, and
+      // it doesn't count as touching the case.
+      const events: { action: string; detail: string }[] = [];
+      if (body.status === "done" && before.status !== "done") {
+        events.push({ action: "completed task", detail: before.title });
+      } else if (body.status === "open" && before.status === "done") {
+        events.push({ action: "reopened task", detail: before.title });
+      }
+      if (
+        body.assignedTo !== undefined &&
+        body.assignedTo !== before.assignedTo
+      ) {
+        events.push({
+          action: "reassigned task",
+          detail: `${before.title}: ${userName(tx, before.assignedTo)} → ${userName(tx, body.assignedTo)}`,
+        });
+      }
+      if (body.dueDate !== undefined && body.dueDate !== before.dueDate) {
+        const d = (x: string | null) => (x ? shortDate(x) : "no date");
+        events.push({
+          action: "changed task due date",
+          detail: `${before.title}: ${d(before.dueDate)} → ${d(body.dueDate ?? null)}`,
+        });
+      }
+      const handled = new Set([
+        "status",
+        "assignedTo",
+        "dueDate",
+        "scheduledDate",
+        "scheduledStart",
+        "scheduledEnd",
+      ]);
+      const other = (Object.keys(body) as (keyof typeof body)[]).filter(
+        k => !handled.has(k) && body[k] !== before[k as keyof typeof before]
+      );
+      if (other.length) {
+        events.push({
+          action: "updated task",
+          detail: `${before.title} · changed ${other.join(", ")}`,
+        });
+      }
+      for (const e of events) {
+        recordActivity(tx, { caseId: before.caseId, userId: user.id, ...e });
+      }
       return mustGetTask(tx, id);
     });
     res.json(updated);

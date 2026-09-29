@@ -1,4 +1,5 @@
 import AddNoteForm from "@/components/AddNoteForm";
+import DelegateControls from "@/components/DelegateControls";
 import StatusBadge from "@/components/StatusBadge";
 import {
   Sheet,
@@ -86,6 +87,13 @@ function DeadlineDetail({
           <span className="text-ash">· {userById.get(ch.changedBy)?.name}</span>
         </div>
       ))}
+      {!data.doneAt && (
+        <DelegateControls
+          kind="deadline"
+          item={data}
+          users={[...userById.values()]}
+        />
+      )}
     </div>
   );
 }
@@ -120,6 +128,13 @@ function TaskDetail({
         Priority {data.priority}
         {who ? ` · assigned to ${who}` : ""} · {data.status}
       </div>
+      {data.status === "open" && (
+        <DelegateControls
+          kind="task"
+          item={data}
+          users={[...userById.values()]}
+        />
+      )}
       {data.subtasks.length > 0 && (
         <ul className="pt-2 space-y-1.5">
           {data.subtasks.map(s => {

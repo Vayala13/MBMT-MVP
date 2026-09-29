@@ -27,6 +27,8 @@ import { deadlineStatus, relativeDueLabel } from "@shared/status";
 import {
   autoPlan,
   DAY_END,
+  DAY_END_LABEL,
+  DAY_START_LABEL,
   DAY_START,
   fitBlock,
   layoutBlocks,
@@ -337,7 +339,9 @@ function Planner({
     <section aria-labelledby="planner-title">
       <div className="flex items-end justify-between mb-4">
         <div>
-          <div className="eyebrow mb-2">Day planner · 8 am – 6 pm</div>
+          <div className="eyebrow mb-2">
+            Day planner · {DAY_START_LABEL} – {DAY_END_LABEL}
+          </div>
           <h2 id="planner-title" className="display text-3xl text-ink">
             {plannedMinutes
               ? `${lengthLabel(plannedMinutes)} planned`
@@ -552,7 +556,7 @@ export default function Today() {
       toast("Nothing to plan", {
         description:
           nowMin >= DAY_END
-            ? "The workday is over (6 pm). Try again tomorrow morning."
+            ? `The workday is over (${DAY_END_LABEL}). Try again tomorrow morning.`
             : "Every open task is already planned, or there's no free time left today.",
       });
       return;
@@ -726,7 +730,7 @@ export default function Today() {
                 </div>
               )}
             </section>
-            <div className="sticky top-6">
+            <div>
               <Planner
                 tasks={mine.data}
                 caseById={caseById}

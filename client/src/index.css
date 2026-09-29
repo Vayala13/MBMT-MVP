@@ -364,3 +364,13 @@
   border-color: var(--color-sand) !important;
   font-family: var(--font-sans);
 }
+
+/* Toast action buttons (Undo, Log it): square navy, not the library's rounded black */
+[data-sonner-toast] [data-button] {
+  border-radius: 0 !important;
+  background: var(--color-navy) !important;
+  color: var(--color-plaster) !important;
+  font-size: 0.68rem !important;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}

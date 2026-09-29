@@ -25,6 +25,7 @@ import { shortCaption, toDate } from "@shared/dashboard";
 import { ymd } from "@shared/dates";
 import { deadlineStatus, relativeDueLabel } from "@shared/status";
 import {
+  autoPlan,
   DAY_END,
   DAY_START,
   fitBlock,
@@ -40,13 +41,23 @@ import {
 } from "@shared/today";
 import type { Case, Task } from "@shared/types";
 import { format, startOfDay } from "date-fns";
-import { Clock, GripVertical, Minus, Plus, X } from "lucide-react";
+import {
+  Clock,
+  GripVertical,
+  ListOrdered,
+  Minus,
+  Plus,
+  Undo2,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
 const ROW_PX = 36; // one 30-minute slot
 const DRAG_TYPE = "text/mbmt-task";
+/** Set only when dragging a block that is already on the planner. */
+const BLOCK_TYPE = "text/mbmt-block";
 const LENGTHS = [30, 60, 90, 120, 180, 240];
 const lengthLabel = (m: number) =>
   m < 60 ? `${m} min` : `${m / 60} hour${m === 60 ? "" : "s"}`;
@@ -334,7 +345,7 @@ function Planner({
           </h2>
         </div>
         <p className="text-xs text-ash max-w-48 text-right">
-          Drag a task onto a time, or use its clock button.
+          Drag a task onto a time. Drag a block back to the list to unplan it.
         </p>
       </div>
 
@@ -388,17 +399,20 @@ function Planner({
             const t = b.task;
             const kase = caseById.get(t.caseId);
             const height = ((b.end - b.start) / SLOT_MINUTES) * ROW_PX;
+            const short = b.end - b.start <= SLOT_MINUTES;
             return (
               <div
                 key={t.id}
                 draggable
                 onDragStart={e => {
                   e.dataTransfer.setData(DRAG_TYPE, String(t.id));
+                  e.dataTransfer.setData(BLOCK_TYPE, String(t.id));
                   e.dataTransfer.effectAllowed = "move";
                 }}
                 data-block-id={t.id}
                 className={cn(
-                  "absolute pointer-events-auto bg-limestone border-l-[3px] border-navy px-2.5 py-1.5 overflow-hidden cursor-grab group z-10",
+                  "absolute pointer-events-auto bg-limestone border-l-[3px] border-navy px-2.5 overflow-hidden cursor-grab group z-10",
+                  short ? "py-1" : "py-1.5",
                   t.status === "done" && "opacity-60"
                 )}
                 style={{
@@ -409,7 +423,13 @@ function Planner({
                 }}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
+                  {/* 30-minute blocks only fit one line: title + time side by side */}
+                  <div
+                    className={cn(
+                      "min-w-0",
+                      short && "flex items-baseline gap-2"
+                    )}
+                  >
                     <div
                       className={cn(
                         "text-sm text-ink truncate",
@@ -418,9 +438,9 @@ function Planner({
                     >
                       {t.title}
                     </div>
-                    <div className="text-[0.68rem] text-smoke truncate">
+                    <div className="text-[0.68rem] text-smoke truncate shrink-0">
                       {toLabel(t.scheduledStart!)}–{toLabel(t.scheduledEnd!)}
-                      {kase ? ` · ${shortCaption(kase.caption)}` : ""}
+                      {kase && !short ? ` · ${shortCaption(kase.caption)}` : ""}
                     </div>
                   </div>
                   <div className="flex items-center shrink-0 opacity-60 group-hover:opacity-100 focus-within:opacity-100">
@@ -498,6 +518,90 @@ export default function Today() {
   const groups = (["overdue", "today", "upcoming", "undated"] as TodoGroup[])
     .map(g => ({ g, rows: todo.filter(t => todoGroup(t, today) === g) }))
     .filter(x => x.rows.length);
+  const [dropBack, setDropBack] = useState(false);
+
+  /** A planned block dropped back on the list comes off today's plan. */
+  const unplanFromDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDropBack(false);
+    const id = Number(e.dataTransfer.getData(BLOCK_TYPE));
+    const t = taskById.get(id);
+    if (!t) return;
+    const was = {
+      scheduledDate: t.scheduledDate,
+      scheduledStart: t.scheduledStart,
+      scheduledEnd: t.scheduledEnd,
+    };
+    await patchTask(id, {
+      scheduledDate: null,
+      scheduledStart: null,
+      scheduledEnd: null,
+    });
+    toast("Taken off today's plan", {
+      description: t.title,
+      action: { label: "Undo", onClick: () => patchTask(id, was) },
+    });
+  };
+
+  /** "Plan my day for me": fill the rest of today in priority order. */
+  const planMyDay = async () => {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const plan = autoPlan(mine.data ?? [], today, todayYmd, nowMin);
+    if (plan.length === 0) {
+      toast("Nothing to plan", {
+        description:
+          nowMin >= DAY_END
+            ? "The workday is over (6 pm). Try again tomorrow morning."
+            : "Every open task is already planned, or there's no free time left today.",
+      });
+      return;
+    }
+    try {
+      await Promise.all(
+        plan.map(p =>
+          api(`/tasks/${p.taskId}`, {
+            method: "PATCH",
+            body: {
+              scheduledDate: todayYmd,
+              scheduledStart: p.start,
+              scheduledEnd: p.end,
+            },
+          })
+        )
+      );
+    } finally {
+      announceDataChanged();
+    }
+    const first = taskById.get(plan[0].taskId);
+    toast(
+      `Planned ${plan.length} task${plan.length === 1 ? "" : "s"} in priority order`,
+      {
+        description: first
+          ? `Start with: ${first.title} at ${toLabel(plan[0].start)}`
+          : undefined,
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            await Promise.all(
+              plan.map(p =>
+                api(`/tasks/${p.taskId}`, {
+                  method: "PATCH",
+                  body: {
+                    scheduledDate: null,
+                    scheduledStart: null,
+                    scheduledEnd: null,
+                  },
+                })
+              )
+            );
+            announceDataChanged();
+          },
+        },
+      }
+    );
+  };
+
   const overdue = groups.find(x => x.g === "overdue")?.rows.length ?? 0;
   const dueToday = groups.find(x => x.g === "today")?.rows.length ?? 0;
 
@@ -517,14 +621,30 @@ export default function Today() {
               </p>
             )}
           </div>
-          <button
-            type="button"
-            className="btn-solid shrink-0"
-            onClick={() => openNewTask()}
-          >
-            <Plus className="size-3.5" strokeWidth={1.5} aria-hidden="true" />{" "}
-            New task
-          </button>
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              className="btn-line"
+              onClick={planMyDay}
+              disabled={!mine.data}
+              title="Fills the rest of today, one hour per task: overdue first, then due today, then P1 → P3"
+            >
+              <ListOrdered
+                className="size-3.5"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              Plan my day for me
+            </button>
+            <button
+              type="button"
+              className="btn-solid"
+              onClick={() => openNewTask()}
+            >
+              <Plus className="size-3.5" strokeWidth={1.5} aria-hidden="true" />{" "}
+              New task
+            </button>
+          </div>
         </div>
 
         {mine.error ? (
@@ -535,7 +655,35 @@ export default function Today() {
           <p className="text-sm text-ash">Loading your day…</p>
         ) : (
           <div className="grid grid-cols-2 gap-12 items-start">
-            <section aria-labelledby="todo-title">
+            <section
+              aria-labelledby="todo-title"
+              className={cn(
+                "relative transition-colors duration-200",
+                dropBack &&
+                  "outline-2 outline-dashed outline-offset-8 outline-ash bg-sand/40"
+              )}
+              onDragOver={e => {
+                if (!e.dataTransfer.types.includes(BLOCK_TYPE)) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setDropBack(true);
+              }}
+              onDragLeave={e => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+                  setDropBack(false);
+              }}
+              onDrop={unplanFromDrop}
+            >
+              {dropBack && (
+                <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-center gap-2 bg-navy text-plaster text-xs tracking-[0.18em] uppercase py-2 pointer-events-none">
+                  <Undo2
+                    className="size-3.5"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                  Drop to take it off today's plan
+                </div>
+              )}
               <div className="eyebrow mb-2">To-do · {user?.name}</div>
               <h2 id="todo-title" className="display text-3xl text-ink mb-4">
                 {todo.length ? "In order" : "All clear"}

@@ -129,3 +129,79 @@ export function layoutBlocks(tasks: Task[]): PlacedBlock[] {
   if (cluster.length) flush();
   return placed;
 }
+
+// ---- "Plan my day for me"
+
+export const AUTO_BLOCK_MINUTES = 60;
+
+export type AutoPlanItem = { taskId: number; start: string; end: string };
+
+/**
+ * Fills the rest of today in to-do order (overdue → due today → priority),
+ * up to one hour per task, starting at the next half hour (not before 8 am).
+ * Gaps between blocks already planned get filled too (a 30-minute gap gets
+ * a 30-minute block), and nothing runs past 6 pm.
+ * Skips tasks already planned today and parent tasks whose subtasks are
+ * still open (the subtasks get planned instead).
+ */
+export function autoPlan(
+  tasks: Task[],
+  today: Date,
+  todayYmd: string,
+  nowMinutes: number,
+  blockMinutes = AUTO_BLOCK_MINUTES
+): AutoPlanItem[] {
+  const plannedToday = (t: Task) =>
+    t.scheduledDate === todayYmd && t.scheduledStart && t.scheduledEnd;
+  const hasOpenSubtasks = new Set(
+    tasks
+      .filter(t => t.status === "open" && t.parentTaskId)
+      .map(t => t.parentTaskId!)
+  );
+  const busy = tasks
+    .filter(plannedToday)
+    .map(
+      t => [toMinutes(t.scheduledStart!), toMinutes(t.scheduledEnd!)] as const
+    )
+    .sort((a, b) => a[0] - b[0]);
+
+  const candidates = sortTodo(tasks, today).filter(
+    t => !plannedToday(t) && !hasOpenSubtasks.has(t.id)
+  );
+
+  let cursor = Math.max(
+    DAY_START,
+    Math.ceil(nowMinutes / SLOT_MINUTES) * SLOT_MINUTES
+  );
+  const plan: AutoPlanItem[] = [];
+  for (const t of candidates) {
+    // Find the next free gap of at least 30 minutes. The top priority starts
+    // as soon as possible: a short gap gets a shorter block rather than
+    // pushing the task later.
+    let placed = false;
+    while (cursor + SLOT_MINUTES <= DAY_END) {
+      const inside = busy.find(([s, e]) => s <= cursor && e > cursor);
+      if (inside) {
+        cursor = inside[1];
+        continue;
+      }
+      const nextBusy = busy.find(([s]) => s > cursor)?.[0] ?? DAY_END;
+      const free = Math.min(nextBusy, DAY_END) - cursor;
+      if (free < SLOT_MINUTES) {
+        cursor = nextBusy;
+        continue;
+      }
+      const len = Math.min(blockMinutes, free);
+      plan.push({
+        taskId: t.id,
+        start: toClock(cursor),
+        end: toClock(cursor + len),
+      });
+      cursor += len;
+      placed = true;
+      break;
+    }
+    if (!placed) break;
+  }
+  return plan;
+}

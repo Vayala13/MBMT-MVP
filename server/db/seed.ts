@@ -430,8 +430,9 @@ export function seed(db: Db, today: Date = new Date()) {
     d.setHours(hour, 0, 0, 0);
     return d.toISOString();
   };
-  // The "third-week Monday": the one Monday that falls 15–21 days out.
-  const thirdMonday = [15, 16, 17, 18, 19, 20, 21].find(
+  // The "third-week Monday": the Monday in week 3 of the 21-day strip.
+  // Day 1 is today, so days 15–21 are offsets 14–20 from today.
+  const thirdMonday = [14, 15, 16, 17, 18, 19, 20].find(
     n => getDay(addDays(today, n)) === 1
   )!;
   const dayOf = (iso: string, n: number) =>
@@ -535,7 +536,7 @@ export function seed(db: Db, today: Date = new Date()) {
       assignedTo: u.paraA,
     });
 
-    // The third-week Monday case (day 15–21)
+    // The third-week Monday case (strip days 15–21)
     addDeadline({
       caseId: c.quillfeather,
       title: "Reply in support of MSJ",

@@ -56,13 +56,13 @@ describe.each(DAYS)("seed(today = %s)", today => {
     expect(overdue).toHaveLength(4);
   });
 
-  it("has a deadline on the third-week Monday (day 15–21)", () => {
+  it("has a deadline on the third-week Monday (strip days 15–21 = offsets 14–20)", () => {
     const hit = allDeadlines.find(d => {
       const due = parseISO(d.dueDate);
       const days = Math.round(
         (due.getTime() - new Date(today).setHours(0, 0, 0, 0)) / 864e5
       );
-      return days >= 15 && days <= 21 && getDay(due) === 1;
+      return days >= 14 && days <= 20 && getDay(due) === 1;
     });
     expect(hit?.title).toBe("Reply in support of MSJ");
   });

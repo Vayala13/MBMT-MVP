@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { NAV_ITEMS } from "@/lib/nav";
 import { SessionProvider, useSession } from "@/lib/session";
 import Acknowledge from "@/pages/Acknowledge";
+import Dashboard from "@/pages/Dashboard";
 import NotFound from "@/pages/NotFound";
 import PickUser from "@/pages/PickUser";
 import Placeholder from "@/pages/Placeholder";
@@ -14,7 +15,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 function Router() {
   return (
     <Switch>
-      {NAV_ITEMS.map(item => (
+      <Route path="/" component={Dashboard} />
+      {NAV_ITEMS.filter(item => item.href !== "/").map(item => (
         <Route key={item.href} path={item.href}>
           <Placeholder href={item.href} />
         </Route>

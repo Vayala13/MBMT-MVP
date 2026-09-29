@@ -1,0 +1,118 @@
+import AppShell from "@/components/AppShell";
+import CountdownList from "@/components/dashboard/CountdownList";
+import DeadlineStrip from "@/components/dashboard/DeadlineStrip";
+import ItemDrawer from "@/components/dashboard/ItemDrawer";
+import MetricRow from "@/components/dashboard/MetricRow";
+import MonthPending from "@/components/dashboard/MonthPending";
+import StaleCases from "@/components/dashboard/StaleCases";
+import type { DrawerItem } from "@/components/dashboard/types";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { useSession } from "@/lib/session";
+import {
+  buildStrip,
+  countdown,
+  metrics,
+  monthPending,
+  staleCases,
+} from "@shared/dashboard";
+import { format, startOfDay } from "date-fns";
+import { useMemo, useState } from "react";
+
+export default function Dashboard() {
+  const { user } = useSession();
+  const data = useDashboardData();
+  const [drawer, setDrawer] = useState<DrawerItem | null>(null);
+  const today = useMemo(() => startOfDay(new Date()), []);
+
+  const view = useMemo(() => {
+    const rows = countdown(data.deadlines, today);
+    return {
+      metrics: metrics(data.cases, data.tasks, today),
+      strip: buildStrip(data.deadlines, today),
+      countdown: rows,
+      stale: staleCases(data.cases, today),
+      month: monthPending(data.tasks, data.deadlines, today),
+      overdueDeadlines: data.deadlines.filter(
+        d => !d.doneAt && d.dueDate < format(today, "yyyy-MM-dd")
+      ).length,
+    };
+  }, [data.cases, data.deadlines, data.tasks, today]);
+
+  const soon = view.strip
+    .slice(0, 8)
+    .reduce((n, d) => n + d.deadlines.length, 0);
+
+  return (
+    <AppShell title="Dashboard">
+      <div className="max-w-[1180px] space-y-14 animate-fade-in-up">
+        <header>
+          <div className="eyebrow mb-3">{format(today, "EEEE, MMMM d")}</div>
+          <h1 className="display text-5xl text-ink">
+            {user
+              ? `Good ${new Date().getHours() < 12 ? "morning" : "afternoon"}, ${user.name.split(" ")[0]}.`
+              : "Dashboard"}
+          </h1>
+          {data.ready && (
+            <p className="font-serif italic text-2xl text-smoke mt-3">
+              {view.overdueDeadlines} overdue · {soon} due in the next 7 days ·{" "}
+              {view.stale.length} stale case
+              {view.stale.length === 1 ? "" : "s"}
+            </p>
+          )}
+        </header>
+
+        {data.error ? (
+          <p role="alert" className="text-sm text-roof">
+            Couldn't load the dashboard: {data.error.message}
+          </p>
+        ) : !data.ready ? (
+          <p className="text-sm text-ash">Loading dashboard…</p>
+        ) : (
+          <>
+            <MetricRow m={view.metrics} />
+            <DeadlineStrip
+              days={view.strip}
+              today={today}
+              caseById={data.caseById}
+              onOpen={setDrawer}
+            />
+            <div className="grid grid-cols-12 gap-10">
+              <div className="col-span-7">
+                <CountdownList
+                  rows={view.countdown}
+                  today={today}
+                  caseById={data.caseById}
+                  userById={data.userById}
+                  onOpen={setDrawer}
+                />
+              </div>
+              <div className="col-span-5">
+                <StaleCases
+                  cases={view.stale}
+                  userById={data.userById}
+                  onOpen={setDrawer}
+                />
+              </div>
+            </div>
+            <MonthPending
+              groups={view.month}
+              today={today}
+              caseById={data.caseById}
+              userById={data.userById}
+              onOpen={setDrawer}
+            />
+          </>
+        )}
+      </div>
+
+      <ItemDrawer
+        item={drawer}
+        today={today}
+        caseById={data.caseById}
+        userById={data.userById}
+        onClose={() => setDrawer(null)}
+        onChanged={data.refetch}
+      />
+    </AppShell>
+  );
+}

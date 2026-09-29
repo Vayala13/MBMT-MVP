@@ -8,11 +8,10 @@ build/
 *.dist
 
 # Environment variables
+# Any .env file (.env, .env.production, .env.local, …). Only an example file may be committed.
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # IDE and editor files
 .vscode/

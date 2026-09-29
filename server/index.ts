@@ -2,18 +2,25 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { apiRouter } from "./routes";
+import { createApp } from "./app";
+import { openDb } from "./db/client";
+import { users } from "./db/schema";
+import { seed } from "./db/seed";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isProd = process.env.NODE_ENV === "production";
 
 async function startServer() {
-  const app = express();
-  const server = createServer(app);
+  const db = openDb();
+  // First boot: fill an empty database with demo data (pnpm db:reset re-seeds on demand).
+  if (!db.select({ id: users.id }).from(users).limit(1).get()) {
+    seed(db);
+    console.log("Empty database: seeded demo data.");
+  }
 
-  app.use(express.json());
-  app.use("/api", apiRouter);
+  const app = createApp(db);
+  const server = createServer(app);
 
   if (isProd) {
     // Serve the built client from dist/public

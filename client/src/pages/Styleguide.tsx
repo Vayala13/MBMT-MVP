@@ -30,28 +30,28 @@ const SAMPLE_ROWS: {
     title: "Response to discovery requests",
     caption: "Pemberton v. Hollow Oak Supply Co.",
     when: "3 days overdue",
-    who: "Assigned to Demo User",
+    who: "Assigned to Pip Marlowe",
   },
   {
     status: "soon",
     title: "Reply ISO motion for summary judgment",
     caption: "Quillfeather v. Bramblewood Transit LLC",
     when: "in 5 days",
-    who: "Assigned to Demo User",
+    who: "Assigned to Pip Marlowe",
   },
   {
     status: "ok",
     title: "Deposition outline — corporate rep",
     caption: "Marchbank v. Tidewell Logistics",
     when: "in 19 days",
-    who: "Assigned to Demo Attorney",
+    who: "Assigned to Octavia Fernsby",
   },
   {
     status: "stale",
     title: "Case untouched for 14 months",
     caption: "In re Estate of Figgins (fictional)",
-    when: "Last touched by Demo Clerk on 7/12/2025",
-    who: "Lead: Demo Attorney",
+    when: "Last touched by Wren Tolliver on 7/12/2025",
+    who: "Lead: Octavia Fernsby",
   },
 ];
 

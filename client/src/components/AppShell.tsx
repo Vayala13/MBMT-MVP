@@ -1,10 +1,9 @@
 import { NAV_ITEMS } from "@/lib/nav";
+import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
+import { ROLE_LABELS } from "@shared/enums";
 import { Palette } from "lucide-react";
 import { Link, useLocation } from "wouter";
-
-/** Placeholder until the Phase 1 user picker exists. Obviously fictional. */
-const DEMO_USER = { name: "Demo User", role: "Paralegal", initials: "DU" };
 
 function NavLink({
   href,
@@ -41,9 +40,10 @@ export default function AppShell({
   title: string;
   children: React.ReactNode;
 }) {
+  const { user, switchUser } = useSession();
   return (
     <div className="min-h-screen flex">
-      <aside className="w-60 shrink-0 bg-navy text-plaster flex flex-col sticky top-0 h-screen z-10">
+      <aside className="w-60 shrink-0 bg-navy text-plaster flex flex-col sticky top-0 h-[calc(100vh-2.25rem)] z-10">
         <div className="px-6 pt-8 pb-10">
           <div className="text-[0.68rem] tracking-[0.28em] uppercase text-sandstone-light">
             MBMT
@@ -63,20 +63,31 @@ export default function AppShell({
       <div className="flex-1 min-w-0 flex flex-col">
         <header className="h-16 border-b border-sand flex items-center justify-between px-10 bg-plaster">
           <div className="eyebrow">{title}</div>
-          <div className="flex items-center gap-3">
-            <div className="text-right leading-tight">
-              <div className="text-sm text-ink">{DEMO_USER.name}</div>
-              <div className="text-xs text-ash">{DEMO_USER.role}</div>
+          {user && (
+            <div className="flex items-center gap-3">
+              <div className="text-right leading-tight">
+                <div className="text-sm text-ink">{user.name}</div>
+                <div className="text-xs text-ash">
+                  {ROLE_LABELS[user.role]} ·{" "}
+                  <button
+                    type="button"
+                    onClick={switchUser}
+                    className="link-quiet text-ash hover:text-ink"
+                  >
+                    Switch user
+                  </button>
+                </div>
+              </div>
+              <div
+                aria-hidden="true"
+                className="size-9 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em]"
+              >
+                {user.initials}
+              </div>
             </div>
-            <div
-              aria-hidden="true"
-              className="size-9 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em]"
-            >
-              {DEMO_USER.initials}
-            </div>
-          </div>
+          )}
         </header>
-        <main className="flex-1 px-10 py-12">{children}</main>
+        <main className="flex-1 px-10 pt-12 pb-24">{children}</main>
       </div>
     </div>
   );

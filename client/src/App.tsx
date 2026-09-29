@@ -1,9 +1,13 @@
+import DemoBanner from "@/components/DemoBanner";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { NAV_ITEMS } from "@/lib/nav";
+import { SessionProvider, useSession } from "@/lib/session";
+import Acknowledge from "@/pages/Acknowledge";
 import NotFound from "@/pages/NotFound";
+import PickUser from "@/pages/PickUser";
 import Placeholder from "@/pages/Placeholder";
 import Styleguide from "@/pages/Styleguide";
-import { NAV_ITEMS } from "@/lib/nav";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -21,13 +25,24 @@ function Router() {
   );
 }
 
+/** Access gate: acknowledgment first, then the user picker, then the app. */
+function Gate() {
+  const { acknowledged, user } = useSession();
+  if (!acknowledged) return <Acknowledge />;
+  if (!user) return <PickUser />;
+  return <Router />;
+}
+
 function App() {
   return (
     <ErrorBoundary>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <SessionProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Gate />
+          <DemoBanner />
+        </TooltipProvider>
+      </SessionProvider>
     </ErrorBoundary>
   );
 }

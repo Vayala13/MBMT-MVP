@@ -356,3 +356,11 @@
     border-color: var(--color-navy);
   }
 }
+
+/* Sonner toasts: square, flat, sand border (library defaults add radius + shadow) */
+[data-sonner-toast][data-styled="true"] {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border-color: var(--color-sand) !important;
+  font-family: var(--font-sans);
+}

@@ -1,3 +1,4 @@
+import AddNoteForm from "@/components/AddNoteForm";
 import StatusBadge from "@/components/StatusBadge";
 import {
   Sheet,
@@ -6,7 +7,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useApi } from "@/hooks/useApi";
-import { api, ApiError } from "@/lib/api";
+import { announceDataChanged } from "@/lib/dataEvents";
 import { fmtDate, fmtDay, fmtShort, timeAgo } from "@/lib/format";
 import { toDate } from "@shared/dashboard";
 import { ROLE_LABELS } from "@shared/enums";
@@ -21,8 +22,7 @@ import type {
   User,
 } from "@shared/types";
 import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { Link } from "wouter";
 import type { DrawerItem } from "./types";
 
 const KIND_LABEL = {
@@ -146,58 +146,6 @@ function TaskDetail({
   );
 }
 
-function AddNote({
-  caseId,
-  taskId,
-  onAdded,
-}: {
-  caseId: number;
-  taskId?: number;
-  onAdded: () => void;
-}) {
-  const [body, setBody] = useState("");
-  const [saving, setSaving] = useState(false);
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!body.trim()) return;
-    setSaving(true);
-    try {
-      await api("/notes", { method: "POST", body: { caseId, taskId, body } });
-      setBody("");
-      toast("Note added");
-      onAdded();
-    } catch (err) {
-      toast.error(
-        err instanceof ApiError ? err.message : "Could not save the note"
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-  return (
-    <form onSubmit={submit} className="space-y-3">
-      <label htmlFor="drawer-note" className="sr-only">
-        Add note
-      </label>
-      <textarea
-        id="drawer-note"
-        rows={2}
-        value={body}
-        onChange={e => setBody(e.target.value)}
-        placeholder="Add a note (demo data only)"
-        className="field resize-none"
-      />
-      <button
-        type="submit"
-        className="btn-solid"
-        disabled={saving || !body.trim()}
-      >
-        {saving ? "Saving…" : "Add note"}
-      </button>
-    </form>
-  );
-}
-
 export default function ItemDrawer({
   item,
   today,
@@ -223,9 +171,9 @@ export default function ItemDrawer({
   const latest = activity.data?.[0];
   const toucher = c?.lastTouchedBy ? userById.get(c.lastTouchedBy) : undefined;
 
+  // Every open list (drawer, dashboard, case page) refetches on this signal.
   const refresh = () => {
-    notes.refetch();
-    activity.refetch();
+    announceDataChanged();
     onChanged();
   };
 
@@ -271,12 +219,23 @@ export default function ItemDrawer({
                     : ""}{" "}
                   · {timeAgo(c.lastTouchedAt)}
                 </div>
+                <Link
+                  href={`/cases/${c.id}`}
+                  className="link-quiet inline-flex items-center gap-1.5 text-xs text-ink mt-3"
+                >
+                  Open case{" "}
+                  <ArrowRight
+                    className="size-3"
+                    strokeWidth={1.5}
+                    aria-hidden="true"
+                  />
+                </Link>
               </div>
             )}
 
             {caseId && (
               <Section title="Add note">
-                <AddNote
+                <AddNoteForm
                   caseId={caseId}
                   taskId={item.kind === "task" ? item.id : undefined}
                   onAdded={refresh}

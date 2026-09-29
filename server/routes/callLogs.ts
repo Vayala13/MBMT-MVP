@@ -1,8 +1,9 @@
 import { callLogCreateSchema, callLogPatchSchema } from "../../shared/schemas";
 import { desc, eq } from "drizzle-orm";
 import { Router } from "express";
+import { nextBusinessDay, ymd } from "../../shared/dates";
 import type { Db } from "../db/client";
-import { callLogs } from "../db/schema";
+import { callLogs, tasks } from "../db/schema";
 import { recordActivity } from "../lib/activity";
 import { currentUser } from "../lib/currentUser";
 import { HttpError, idParam, intQuery, parseBody } from "../lib/http";
@@ -37,13 +38,36 @@ export function callLogsRouter(db: Db) {
         })
         .returning()
         .get();
+      // Follow-up checked → a task for the caller, due the next business day.
+      let followUpTaskId: number | null = null;
+      if (row.followUpNeeded) {
+        const title = `Follow up: call with ${row.withWhom}`;
+        followUpTaskId = tx
+          .insert(tasks)
+          .values({
+            caseId: row.caseId,
+            title,
+            assignedTo: user.id,
+            dueDate: ymd(nextBusinessDay(new Date())),
+            priority: 1,
+          })
+          .returning({ id: tasks.id })
+          .get().id;
+        recordActivity(tx, {
+          caseId: row.caseId,
+          userId: user.id,
+          action: "added task",
+          detail: title,
+        });
+      }
+      // Logged last so the case reads "Last touched by … · logged call".
       recordActivity(tx, {
         caseId: row.caseId,
         userId: user.id,
         action: "logged call",
         detail: `${row.direction === "in" ? "Call from" : "Call to"} ${row.withWhom}${row.followUpNeeded ? " · follow-up needed" : ""}`,
       });
-      return row;
+      return { ...row, followUpTaskId };
     });
     res.status(201).json(created);
   });

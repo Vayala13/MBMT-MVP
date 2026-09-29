@@ -64,6 +64,17 @@ describe("reads", () => {
     expect(detail.changes[0].reason).toBe("Rule 11 agreement");
   });
 
+  it("can include change history in the deadline list", async () => {
+    const rows = (await api("GET", "/deadlines?includeChanges=true")).json as {
+      kind: string;
+      changes: { reason: string }[];
+    }[];
+    expect(rows.every(r => Array.isArray(r.changes))).toBe(true);
+    expect(rows.find(r => r.kind === "rule_11")!.changes[0].reason).toBe(
+      "Rule 11 agreement"
+    );
+  });
+
   it("404s unknown ids and routes", async () => {
     expect((await api("GET", "/cases/9999")).status).toBe(404);
     expect((await api("GET", "/nope")).status).toBe(404);
@@ -99,6 +110,35 @@ describe("writes", () => {
     const [latest] = (await api("GET", "/activity?caseId=12&limit=1")).json;
     expect(latest).toMatchObject({ userId: PARALEGAL, action: "logged call" });
     expect(latest.detail).toContain("follow-up needed");
+  });
+
+  it("a call flagged for follow-up auto-creates a task for the caller", async () => {
+    const r = await api("POST", "/call-logs", {
+      caseId: 3,
+      direction: "out",
+      withWhom: "Opposing counsel (fictional)",
+      summary: "Asked about deposition dates",
+      followUpNeeded: true,
+    });
+    expect(r.json.followUpTaskId).toEqual(expect.any(Number));
+    const t = (await api("GET", `/tasks/${r.json.followUpTaskId}`)).json;
+    expect(t).toMatchObject({
+      caseId: 3,
+      title: "Follow up: call with Opposing counsel (fictional)",
+      assignedTo: PARALEGAL,
+      status: "open",
+      priority: 1,
+    });
+    expect(t.dueDate > new Date().toISOString().slice(0, 10)).toBe(true);
+
+    const plain = await api("POST", "/call-logs", {
+      caseId: 3,
+      direction: "in",
+      withWhom: "Client",
+      summary: "Just checking in",
+      followUpNeeded: false,
+    });
+    expect(plain.json.followUpTaskId).toBeNull();
   });
 
   it("moving a deadline date requires a reason and records the change", async () => {

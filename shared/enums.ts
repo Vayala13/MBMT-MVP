@@ -24,6 +24,14 @@ export const CASE_STATUSES = [
 ] as const;
 export type CaseStatus = (typeof CASE_STATUSES)[number];
 
+export const CASE_STATUS_LABELS: Record<CaseStatus, string> = {
+  inquiry: "Inquiry",
+  consult: "Consult",
+  active: "Active",
+  referred_out: "Referred out",
+  closed: "Closed",
+};
+
 export const DEADLINE_KINDS = [
   "court_ordered",
   "statutory",
@@ -31,6 +39,13 @@ export const DEADLINE_KINDS = [
   "rule_11",
 ] as const;
 export type DeadlineKind = (typeof DEADLINE_KINDS)[number];
+
+export const DEADLINE_KIND_LABELS: Record<DeadlineKind, string> = {
+  court_ordered: "Court-ordered",
+  statutory: "Statutory",
+  internal: "Internal",
+  rule_11: "Rule 11",
+};
 
 /** Reasons offered when a deadline date moves (free text allowed after "Other"). */
 export const DEADLINE_CHANGE_REASONS = [

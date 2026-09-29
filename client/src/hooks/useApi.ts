@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { onDataChanged } from "@/lib/dataEvents";
 import { useCallback, useEffect, useState } from "react";
 
 /** Minimal GET hook: { data, error, loading, refetch }. */
@@ -27,5 +28,6 @@ export function useApi<T>(path: string | null) {
   }, [path, nonce]);
 
   const refetch = useCallback(() => setNonce(n => n + 1), []);
+  useEffect(() => onDataChanged(refetch), [refetch]);
   return { data, error, loading, refetch };
 }

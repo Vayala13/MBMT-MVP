@@ -1,8 +1,9 @@
+import { useLogCall } from "@/components/LogCallDialog";
 import { NAV_ITEMS } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@shared/enums";
-import { Palette } from "lucide-react";
+import { Palette, Phone } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 function NavLink({
@@ -41,6 +42,7 @@ export default function AppShell({
   children: React.ReactNode;
 }) {
   const { user, switchUser } = useSession();
+  const { openLogCall } = useLogCall();
   return (
     <div className="min-h-screen flex">
       <aside className="w-60 shrink-0 bg-navy text-plaster flex flex-col sticky top-0 h-[calc(100vh-2.25rem)] z-10">
@@ -49,6 +51,25 @@ export default function AppShell({
             MBMT
           </div>
           <div className="display text-2xl mt-2">Case Tracker</div>
+        </div>
+        <div className="px-6 pb-8">
+          <button
+            type="button"
+            onClick={() => openLogCall()}
+            className="w-full flex items-center justify-between gap-2 border border-plaster/25 px-4 py-3 text-[0.7rem] tracking-[0.2em] uppercase text-plaster hover:bg-aare hover:border-aare transition-colors duration-300"
+          >
+            <span className="flex items-center gap-2.5">
+              <Phone
+                className="size-3.5"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+              Log a call
+            </span>
+            <kbd className="font-sans text-[0.65rem] tracking-normal border border-plaster/30 px-1.5 py-0.5 text-sandstone-light">
+              C
+            </kbd>
+          </button>
         </div>
         <nav aria-label="Main" className="flex flex-col gap-0.5">
           {NAV_ITEMS.map(item => (

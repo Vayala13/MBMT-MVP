@@ -2,7 +2,7 @@ import {
   deadlineCreateSchema,
   deadlinePatchSchema,
 } from "../../shared/schemas";
-import { and, asc, eq, gte, isNull, lte } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
 import { Router } from "express";
 import type { Db } from "../db/client";
 import { deadlineChanges, deadlines } from "../db/schema";
@@ -19,12 +19,13 @@ import {
 export function deadlinesRouter(db: Db) {
   const r = Router();
 
-  // GET /api/deadlines?caseId=&from=YYYY-MM-DD&to=YYYY-MM-DD&open=true
+  // GET /api/deadlines?caseId=&from=YYYY-MM-DD&to=YYYY-MM-DD&open=true&includeChanges=true
   r.get("/", (req, res) => {
     const caseId = intQuery(req, "caseId");
     const from = strQuery(req, "from");
     const to = strQuery(req, "to");
     const openOnly = strQuery(req, "open") === "true";
+    const includeChanges = strQuery(req, "includeChanges") === "true";
     const rows = db
       .select()
       .from(deadlines)
@@ -38,7 +39,30 @@ export function deadlinesRouter(db: Db) {
       )
       .orderBy(asc(deadlines.dueDate))
       .all();
-    res.json(rows);
+    if (!includeChanges) {
+      res.json(rows);
+      return;
+    }
+    // One query for every row's history instead of one request per deadline.
+    const changes = rows.length
+      ? db
+          .select()
+          .from(deadlineChanges)
+          .where(
+            inArray(
+              deadlineChanges.deadlineId,
+              rows.map(d => d.id)
+            )
+          )
+          .orderBy(asc(deadlineChanges.changedAt))
+          .all()
+      : [];
+    res.json(
+      rows.map(d => ({
+        ...d,
+        changes: changes.filter(c => c.deadlineId === d.id),
+      }))
+    );
   });
 
   // Includes the change history ("moved from 10/2 → 10/16 · Rule 11 agreement")

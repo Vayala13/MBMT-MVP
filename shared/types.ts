@@ -51,6 +51,8 @@ export type DeadlineChange = {
   changedAt: string;
 };
 
+export type DeadlineWithChanges = Deadline & { changes: DeadlineChange[] };
+
 export type Task = {
   id: number;
   caseId: number;

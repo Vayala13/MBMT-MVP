@@ -3,7 +3,7 @@ import { daysUntil } from "./status";
 import type { Task } from "./types";
 
 /**
- * Today view math: the to-do order and the 8 am – 11:59 pm planner grid.
+ * Today view math: the to-do order and the 8 am – 6 pm planner grid.
  * To-do order (PLAN.md): overdue first, then due today, then by priority.
  */
 
@@ -45,11 +45,12 @@ export function sortTodo(tasks: Task[], today: Date): Task[] {
 
 export const DAY_START = 8 * 60;
 /**
- * Workday ends at 11:59 pm. Internally the end is midnight (24:00) so the
- * last half-hour slot (11:30) works like the others; any time at or past
- * midnight is saved and shown as 23:59 / "11:59 pm" (see toClock).
+ * Workday (from paralegal staff): official clock-out is 5 pm, and anyone
+ * who stays late is done by 6 pm. "Plan my day" stops at clock-out; the
+ * planner grid runs to 6 pm so the late hour can be planned by hand.
  */
-export const DAY_END = 24 * 60;
+export const CLOCK_OUT = 17 * 60;
+export const DAY_END = 18 * 60;
 export const SLOT_MINUTES = 30;
 
 export const toMinutes = (hhmm: string) => {
@@ -57,9 +58,7 @@ export const toMinutes = (hhmm: string) => {
   return h * 60 + m;
 };
 export const toClock = (minutes: number) =>
-  minutes >= DAY_END
-    ? "23:59"
-    : `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+  `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 /** "13:30" → "1:30 pm" */
 export const toLabel = (hhmm: string) => {
   const m = toMinutes(hhmm);
@@ -67,7 +66,7 @@ export const toLabel = (hhmm: string) => {
   return `${((h + 11) % 12) + 1}${m % 60 ? `:${String(m % 60).padStart(2, "0")}` : ""} ${h < 12 ? "am" : "pm"}`;
 };
 
-/** "08:00", "08:30", … "23:30" */
+/** "08:00", "08:30", … "17:30" */
 export const SLOTS = Array.from(
   { length: (DAY_END - DAY_START) / SLOT_MINUTES },
   (_, i) => toClock(DAY_START + i * SLOT_MINUTES)
@@ -75,7 +74,7 @@ export const SLOTS = Array.from(
 
 /**
  * A block starting at `start`, `minutes` long, kept inside the working day:
- * it never starts before 8 am and never runs past 11:59 pm (shortened if it must).
+ * it never starts before 8 am and never runs past 6 pm (shortened if it must).
  */
 export function fitBlock(
   start: string,
@@ -147,7 +146,7 @@ export type AutoPlanItem = { taskId: number; start: string; end: string };
  * Fills the rest of today in to-do order (overdue → due today → priority),
  * up to one hour per task, starting at the next half hour (not before 8 am).
  * Gaps between blocks already planned get filled too (a 30-minute gap gets
- * a 30-minute block), and nothing runs past 11:59 pm.
+ * a 30-minute block), and nothing runs past the 5 pm clock-out.
  * Skips tasks already planned today and parent tasks whose subtasks are
  * still open (the subtasks get planned instead).
  */
@@ -156,7 +155,8 @@ export function autoPlan(
   today: Date,
   todayYmd: string,
   nowMinutes: number,
-  blockMinutes = AUTO_BLOCK_MINUTES
+  blockMinutes = AUTO_BLOCK_MINUTES,
+  dayEnd = CLOCK_OUT
 ): AutoPlanItem[] {
   const plannedToday = (t: Task) =>
     t.scheduledDate === todayYmd && t.scheduledStart && t.scheduledEnd;
@@ -186,14 +186,14 @@ export function autoPlan(
     // as soon as possible: a short gap gets a shorter block rather than
     // pushing the task later.
     let placed = false;
-    while (cursor + SLOT_MINUTES <= DAY_END) {
+    while (cursor + SLOT_MINUTES <= dayEnd) {
       const inside = busy.find(([s, e]) => s <= cursor && e > cursor);
       if (inside) {
         cursor = inside[1];
         continue;
       }
-      const nextBusy = busy.find(([s]) => s > cursor)?.[0] ?? DAY_END;
-      const free = Math.min(nextBusy, DAY_END) - cursor;
+      const nextBusy = busy.find(([s]) => s > cursor)?.[0] ?? dayEnd;
+      const free = Math.min(nextBusy, dayEnd) - cursor;
       if (free < SLOT_MINUTES) {
         cursor = nextBusy;
         continue;
@@ -213,6 +213,7 @@ export function autoPlan(
   return plan;
 }
 
-/** "8 am" / "11:59 pm", for labels. */
+/** "8 am", "5 pm", "6 pm", for labels. */
 export const DAY_START_LABEL = toLabel(toClock(DAY_START));
+export const CLOCK_OUT_LABEL = toLabel(toClock(CLOCK_OUT));
 export const DAY_END_LABEL = toLabel(toClock(DAY_END));

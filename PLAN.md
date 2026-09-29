@@ -177,7 +177,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 - **Done when:** logging a call on case A updates its "last touched" line and shows on the dashboard drawer.
 
 ### Phase 4: Today view + task templates (≈ 2.5 hr)
-1. **Today** page, left half: prioritized to-do (overdue first, then due today, then priority). Right half: time-block day planner (8 am–11:59 pm, 30-min slots; *changed from 6 pm at Vivi's request*). Drag a task into a slot to set `scheduled_block`.
+1. **Today** page, left half: prioritized to-do (overdue first, then due today, then priority). Right half: time-block day planner (8 am–6 pm, 30-min slots). *(From paralegal staff: official clock-out is 5 pm and nobody stays past 6 pm. "Plan my day" stops at 5 pm; the 5–6 pm hour is shaded "Staying late" and can be planned by hand.)*. Drag a task into a slot to set `scheduled_block`.
 2. **Templates page:** CRUD for task templates. Seed these starter templates (staff will refine them):
    - *MSJ Reply*: pull and label exhibits (A, B, C…), check in with attorney on progress, draft reply, cite-check every authority, final review, file.
    - *Motion to Compel*: review discovery responses for objections/omissions, draft motion, cite-check, attorney review, file.

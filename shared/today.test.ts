@@ -55,11 +55,10 @@ describe("sortTodo", () => {
 });
 
 describe("planner grid", () => {
-  it("has 32 half-hour slots from 8 am to 11:30 pm (day ends 11:59 pm)", () => {
-    expect(SLOTS).toHaveLength(32);
+  it("has 20 half-hour slots from 8 am to 5:30 pm (grid ends 6 pm)", () => {
+    expect(SLOTS).toHaveLength(20);
     expect(SLOTS[0]).toBe("08:00");
-    expect(SLOTS.at(-1)).toBe("23:30");
-    expect(toLabel("23:59")).toBe("11:59 pm");
+    expect(SLOTS.at(-1)).toBe("17:30");
     expect(toLabel("13:30")).toBe("1:30 pm");
     expect(toLabel("08:00")).toBe("8 am");
     expect(toLabel("12:00")).toBe("12 pm");
@@ -67,9 +66,8 @@ describe("planner grid", () => {
 
   it("fits a 2-hour block and keeps it inside the day", () => {
     expect(fitBlock("09:00", 120)).toEqual({ start: "09:00", end: "11:00" });
-    expect(fitBlock("17:00", 120)).toEqual({ start: "17:00", end: "19:00" });
-    expect(fitBlock("23:00", 120)).toEqual({ start: "23:00", end: "23:59" });
-    expect(fitBlock("23:59", 60)).toEqual({ start: "23:30", end: "23:59" });
+    expect(fitBlock("17:00", 120)).toEqual({ start: "17:00", end: "18:00" });
+    expect(fitBlock("19:00", 60)).toEqual({ start: "17:30", end: "18:00" });
     expect(fitBlock("07:00", 60)).toEqual({ start: "08:00", end: "09:00" });
     expect(fitBlock("10:00", 10)).toEqual({ start: "10:00", end: "10:30" });
   });
@@ -154,15 +152,15 @@ describe("autoPlan (Plan my day for me)", () => {
     expect(autoPlan(tasks, today, Y, nine).map(p => p.taskId)).toEqual([302]);
   });
 
-  it("stops at 11:59 pm and plans nothing after it", () => {
+  it("stops at the 5 pm clock-out (the 5-6 pm stay-late hour is manual only)", () => {
     const many = Array.from({ length: 5 }, (_, i) =>
       task({ id: 400 + i, dueDate: "2026-09-29" })
     );
-    expect(autoPlan(many, today, Y, 21 * 60 + 45)).toEqual([
-      { taskId: 400, start: "22:00", end: "23:00" },
-      { taskId: 401, start: "23:00", end: "23:59" },
+    expect(autoPlan(many, today, Y, 15 * 60 + 5)).toEqual([
+      { taskId: 400, start: "15:30", end: "16:30" },
+      { taskId: 401, start: "16:30", end: "17:00" },
     ]);
-    expect(autoPlan(many, today, Y, 23 * 60 + 59)).toEqual([]);
+    expect(autoPlan(many, today, Y, 17 * 60 + 5)).toEqual([]);
   });
 
   it("ignores done tasks", () => {

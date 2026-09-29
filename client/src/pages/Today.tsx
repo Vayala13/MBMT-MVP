@@ -26,6 +26,8 @@ import { ymd } from "@shared/dates";
 import { deadlineStatus, relativeDueLabel } from "@shared/status";
 import {
   autoPlan,
+  CLOCK_OUT,
+  CLOCK_OUT_LABEL,
   DAY_END,
   DAY_END_LABEL,
   DAY_START_LABEL,
@@ -340,7 +342,8 @@ function Planner({
       <div className="flex items-end justify-between mb-4">
         <div>
           <div className="eyebrow mb-2">
-            Day planner · {DAY_START_LABEL} – {DAY_END_LABEL}
+            Day planner · {DAY_START_LABEL} – {CLOCK_OUT_LABEL} · stay late to{" "}
+            {DAY_END_LABEL}
           </div>
           <h2 id="planner-title" className="display text-3xl text-ink">
             {plannedMinutes
@@ -374,6 +377,7 @@ function Planner({
               s.endsWith(":00")
                 ? "border-sand"
                 : "border-sand/50 border-dashed",
+              toMinutes(s) >= CLOCK_OUT && "bg-sand/35",
               hover === s && "bg-sand/60"
             )}
             style={{ top: i * ROW_PX, height: ROW_PX }}
@@ -381,6 +385,11 @@ function Planner({
             <span className="w-16 shrink-0 pr-3 pt-1 text-right text-[0.68rem] text-ash tabular-nums">
               {s.endsWith(":00") ? toLabel(s) : ""}
             </span>
+            {toMinutes(s) === CLOCK_OUT && (
+              <span className="pt-1 text-[0.62rem] uppercase tracking-[0.16em] text-ash">
+                Staying late · after {CLOCK_OUT_LABEL} clock-out
+              </span>
+            )}
           </div>
         ))}
 
@@ -391,7 +400,7 @@ function Planner({
             className="absolute left-16 right-0 border-t border-roof z-20 pointer-events-none"
             style={{ top: ((nowMin - DAY_START) / SLOT_MINUTES) * ROW_PX }}
           >
-            <span className="absolute -top-2.5 -left-11 text-[0.6rem] uppercase tracking-[0.14em] text-roof bg-plaster px-1">
+            <span className="absolute -top-2.5 right-0 text-[0.6rem] uppercase tracking-[0.14em] text-roof bg-plaster px-1">
               now
             </span>
           </div>
@@ -555,8 +564,8 @@ export default function Today() {
     if (plan.length === 0) {
       toast("Nothing to plan", {
         description:
-          nowMin >= DAY_END
-            ? `The workday is over (${DAY_END_LABEL}). Try again tomorrow morning.`
+          nowMin >= CLOCK_OUT
+            ? `It's after the ${CLOCK_OUT_LABEL} clock-out, so there's nothing left to plan today. Drag a task onto the ${CLOCK_OUT_LABEL}–${DAY_END_LABEL} hour if you're staying late.`
             : "Every open task is already planned, or there's no free time left today.",
       });
       return;
@@ -631,7 +640,7 @@ export default function Today() {
               className="btn-line"
               onClick={planMyDay}
               disabled={!mine.data}
-              title="Fills the rest of today, one hour per task: overdue first, then due today, then P1 → P3"
+              title={`Fills the rest of today until the ${CLOCK_OUT_LABEL} clock-out, up to an hour per task: overdue first, then due today, then P1 → P3`}
             >
               <ListOrdered
                 className="size-3.5"
@@ -730,7 +739,7 @@ export default function Today() {
                 </div>
               )}
             </section>
-            <div>
+            <div className="sticky top-6">
               <Planner
                 tasks={mine.data}
                 caseById={caseById}

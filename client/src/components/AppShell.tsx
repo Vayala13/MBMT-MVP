@@ -1,12 +1,21 @@
+import { useCaseSearch } from "@/components/CaseSearch";
 import { useIncomingCall } from "@/components/IncomingCall";
 import ReminderBanner from "@/components/ReminderBanner";
 import { useLogCall } from "@/components/LogCallDialog";
+import { useNewTask } from "@/components/NewTaskDialog";
 import { useMyWork } from "@/lib/myWork";
 import { NAV_ITEMS } from "@/lib/nav";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@shared/enums";
-import { FlaskConical, Palette, Phone, UserCheck } from "lucide-react";
+import {
+  FlaskConical,
+  Palette,
+  Phone,
+  Plus,
+  Search,
+  UserCheck,
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 function NavLink({
@@ -47,6 +56,8 @@ export default function AppShell({
   const { user, switchUser } = useSession();
   const { openLogCall } = useLogCall();
   const { simulateIncomingCall } = useIncomingCall();
+  const { openNewTask } = useNewTask();
+  const { openCaseSearch } = useCaseSearch();
   const { myWork, setMyWork } = useMyWork();
   return (
     <div className="min-h-screen flex">
@@ -57,7 +68,7 @@ export default function AppShell({
           </div>
           <div className="display text-2xl mt-2">Case Tracker</div>
         </div>
-        <div className="px-6 pb-8">
+        <div className="px-6 pb-6">
           <button
             type="button"
             onClick={() => openLogCall()}
@@ -75,6 +86,31 @@ export default function AppShell({
               C
             </kbd>
           </button>
+          {(
+            [
+              ["New task", "N", Plus, () => openNewTask()],
+              ["Search cases", "/", Search, openCaseSearch],
+            ] as const
+          ).map(([label, key, Icon, onClick]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={onClick}
+              className="mt-1.5 w-full flex items-center justify-between gap-2 px-4 py-2 text-[0.7rem] tracking-[0.2em] uppercase text-sandstone-light hover:text-plaster hover:bg-plaster/5 transition-colors duration-300"
+            >
+              <span className="flex items-center gap-2.5">
+                <Icon
+                  className="size-3.5"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                {label}
+              </span>
+              <kbd className="font-sans text-[0.65rem] tracking-normal border border-plaster/20 px-1.5 py-0.5">
+                {key}
+              </kbd>
+            </button>
+          ))}
           <button
             type="button"
             onClick={simulateIncomingCall}
@@ -99,7 +135,7 @@ export default function AppShell({
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
-        <header className="h-16 border-b border-sand flex items-center justify-between px-10 bg-plaster">
+        <header className="h-16 border-b border-sand flex items-center justify-between px-6 xl:px-10 bg-plaster">
           <div className="eyebrow">{title}</div>
           {user && (
             <div className="flex items-center gap-6">
@@ -146,7 +182,7 @@ export default function AppShell({
             </div>
           )}
         </header>
-        <main className="flex-1 px-10 pt-12 pb-24">
+        <main className="flex-1 px-6 xl:px-10 pt-12 pb-24">
           <div className="max-w-[1180px]">
             <ReminderBanner />
           </div>

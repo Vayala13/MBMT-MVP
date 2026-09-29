@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import { ErrorState, LoadingState } from "@/components/States";
 import { useApi } from "@/hooks/useApi";
 import { cn } from "@/lib/utils";
 import { PROPOSED_PERMISSIONS, type Access } from "@shared/access";
@@ -16,7 +17,7 @@ const CELL: Record<
 };
 
 export default function TeamAccess() {
-  const { data: users } = useApi<User[]>("/users");
+  const { data: users, error } = useApi<User[]>("/users");
 
   return (
     <AppShell title="Team & Access">
@@ -127,29 +128,35 @@ export default function TeamAccess() {
           <h2 id="team-title" className="display text-3xl text-ink mb-5">
             Team (demo)
           </h2>
-          <ul className="grid grid-cols-3 border-t border-l border-sand">
-            {USER_ROLES.flatMap(r =>
-              (users ?? []).filter(u => u.role === r)
-            ).map(u => (
-              <li
-                key={u.id}
-                className="p-5 border-r border-b border-sand flex items-center gap-4"
-              >
-                <span
-                  aria-hidden="true"
-                  className="size-10 shrink-0 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em]"
+          {error ? (
+            <ErrorState what="the team" error={error} />
+          ) : !users ? (
+            <LoadingState what="the team" />
+          ) : (
+            <ul className="grid grid-cols-3 border-t border-l border-sand">
+              {USER_ROLES.flatMap(r =>
+                (users ?? []).filter(u => u.role === r)
+              ).map(u => (
+                <li
+                  key={u.id}
+                  className="p-5 border-r border-b border-sand flex items-center gap-4"
                 >
-                  {u.initials}
-                </span>
-                <span>
-                  <span className="block text-ink">{u.name}</span>
-                  <span className="block text-xs text-ash">
-                    {ROLE_LABELS[u.role]}
+                  <span
+                    aria-hidden="true"
+                    className="size-10 shrink-0 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em]"
+                  >
+                    {u.initials}
                   </span>
-                </span>
-              </li>
-            ))}
-          </ul>
+                  <span>
+                    <span className="block text-ink">{u.name}</span>
+                    <span className="block text-xs text-ash">
+                      {ROLE_LABELS[u.role]}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
           <p className="text-xs text-ash mt-3">
             Fictional people for the prototype.
           </p>

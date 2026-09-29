@@ -1,5 +1,6 @@
 import AddNoteForm from "@/components/AddNoteForm";
 import AppShell from "@/components/AppShell";
+import { ErrorState, LoadingState } from "@/components/States";
 import DeadlineDateDialog from "@/components/DeadlineDateDialog";
 import ItemDrawer from "@/components/dashboard/ItemDrawer";
 import type { DrawerItem } from "@/components/dashboard/types";
@@ -425,9 +426,7 @@ export default function CaseDetail({ id }: { id: number }) {
   if (kase.error) {
     return (
       <AppShell title="Case">
-        <p role="alert" className="text-sm text-roof">
-          Couldn't load this case: {kase.error.message}
-        </p>
+        <ErrorState what="this case" error={kase.error} />
         <Link
           href="/cases"
           className="link-quiet text-sm text-ink mt-4 inline-block"
@@ -440,7 +439,7 @@ export default function CaseDetail({ id }: { id: number }) {
   if (!c || !users.data) {
     return (
       <AppShell title="Case">
-        <p className="text-sm text-ash">Loading case…</p>
+        <LoadingState what="the case" />
       </AppShell>
     );
   }

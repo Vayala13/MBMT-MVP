@@ -1,4 +1,5 @@
 import DemoBanner from "@/components/DemoBanner";
+import { CaseSearchProvider } from "@/components/CaseSearch";
 import { IncomingCallProvider } from "@/components/IncomingCall";
 import { LogCallProvider } from "@/components/LogCallDialog";
 import { NewTaskProvider } from "@/components/NewTaskDialog";
@@ -48,7 +49,9 @@ function Gate() {
       <LogCallProvider>
         <NewTaskProvider>
           <IncomingCallProvider>
-            <Router />
+            <CaseSearchProvider>
+              <Router />
+            </CaseSearchProvider>
           </IncomingCallProvider>
         </NewTaskProvider>
       </LogCallProvider>

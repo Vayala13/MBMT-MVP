@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import { ErrorState, LoadingState } from "@/components/States";
 import { useNewTask } from "@/components/NewTaskDialog";
 import {
   Dialog,
@@ -343,11 +344,9 @@ export default function Templates() {
         </p>
 
         {error ? (
-          <p role="alert" className="text-sm text-roof">
-            Couldn't load templates: {error.message}
-          </p>
+          <ErrorState what="templates" error={error} />
         ) : !templates ? (
-          <p className="text-sm text-ash">Loading templates…</p>
+          <LoadingState what="templates" />
         ) : templates.length === 0 ? (
           <p className="font-serif italic text-xl text-smoke">
             No templates yet.

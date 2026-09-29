@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import { ErrorState, LoadingState } from "@/components/States";
 import ItemDrawer from "@/components/dashboard/ItemDrawer";
 import type { DrawerItem } from "@/components/dashboard/types";
 import { STATUS_ICONS } from "@/components/StatusBadge";
@@ -63,6 +64,8 @@ export default function Calendar() {
   const tasks = useApi<Task[]>("/tasks");
   const cases = useApi<Case[]>("/cases");
   const users = useApi<User[]>("/users");
+  const loadError =
+    deadlines.error ?? tasks.error ?? cases.error ?? users.error;
   const caseById = useMemo(
     () => new Map((cases.data ?? []).map(c => [c.id, c])),
     [cases.data]
@@ -322,84 +325,94 @@ export default function Calendar() {
           </p>
         )}
 
-        {/* Grid */}
-        <div className="border-t border-l border-sand">
-          <div className="grid grid-cols-7">
-            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
-              <div
-                key={d}
-                className="eyebrow px-2 py-2 border-r border-b border-sand"
-              >
-                {d}
-              </div>
-            ))}
-          </div>
-          <ol className="grid grid-cols-7">
-            {days.map(({ date, inRange }) => {
-              const items = byDay.get(date) ?? [];
-              const d = toDate(date);
-              const weekend = getDay(d) === 0 || getDay(d) === 6;
-              const isToday = date === todayYmd;
-              const limit = view === "month" ? MONTH_LIMIT : Infinity;
-              return (
-                <li
-                  key={date}
-                  data-date={date}
-                  aria-label={`${format(d, "EEEE, MMMM d")}: ${items.length} item${items.length === 1 ? "" : "s"}`}
-                  className={cn(
-                    "border-r border-b border-sand p-1.5 flex flex-col gap-1",
-                    view === "month"
-                      ? "min-h-28"
-                      : view === "week"
-                        ? "min-h-80"
-                        : "min-h-36",
-                    weekend && "bg-sand/35",
-                    !inRange && "opacity-45"
-                  )}
-                >
+        {loadError ? (
+          <ErrorState what="the calendar" error={loadError} />
+        ) : !deadlines.data || !tasks.data || !cases.data ? (
+          <LoadingState what="the calendar" />
+        ) : (
+          <>
+            {/* Grid */}
+            <div className="border-t border-l border-sand">
+              <div className="grid grid-cols-7">
+                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
                   <div
-                    className={cn(
-                      "flex items-baseline gap-1.5 px-0.5 mb-0.5",
-                      isToday && "text-ink"
-                    )}
+                    key={d}
+                    className="eyebrow px-2 py-2 border-r border-b border-sand"
                   >
-                    <span
+                    {d}
+                  </div>
+                ))}
+              </div>
+              <ol className="grid grid-cols-7">
+                {days.map(({ date, inRange }) => {
+                  const items = byDay.get(date) ?? [];
+                  const d = toDate(date);
+                  const weekend = getDay(d) === 0 || getDay(d) === 6;
+                  const isToday = date === todayYmd;
+                  const limit = view === "month" ? MONTH_LIMIT : Infinity;
+                  return (
+                    <li
+                      key={date}
+                      data-date={date}
+                      aria-label={`${format(d, "EEEE, MMMM d")}: ${items.length} item${items.length === 1 ? "" : "s"}`}
                       className={cn(
-                        "text-sm tabular-nums",
-                        isToday ? "bg-navy text-plaster px-1.5" : "text-smoke"
+                        "border-r border-b border-sand p-1.5 flex flex-col gap-1",
+                        view === "month"
+                          ? "min-h-28"
+                          : view === "week"
+                            ? "min-h-80"
+                            : "min-h-36",
+                        weekend && "bg-sand/35",
+                        !inRange && "opacity-45"
                       )}
                     >
-                      {format(d, "d")}
-                    </span>
-                    {(format(d, "d") === "1" || date === first) && (
-                      <span className="text-[0.65rem] uppercase tracking-[0.14em] text-ash">
-                        {format(d, "MMM")}
-                      </span>
-                    )}
-                    {isToday && (
-                      <span className="text-[0.65rem] uppercase tracking-[0.14em] text-ink">
-                        Today
-                      </span>
-                    )}
-                  </div>
-                  {items.slice(0, limit).map(chip)}
-                  {items.length > limit && (
-                    <button
-                      type="button"
-                      className="link-quiet text-xs text-ink text-left px-1 w-fit"
-                      onClick={() => {
-                        setView("week");
-                        setAnchor(d);
-                      }}
-                    >
-                      +{items.length - limit} more
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </div>
+                      <div
+                        className={cn(
+                          "flex items-baseline gap-1.5 px-0.5 mb-0.5",
+                          isToday && "text-ink"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "text-sm tabular-nums",
+                            isToday
+                              ? "bg-navy text-plaster px-1.5"
+                              : "text-smoke"
+                          )}
+                        >
+                          {format(d, "d")}
+                        </span>
+                        {(format(d, "d") === "1" || date === first) && (
+                          <span className="text-[0.65rem] uppercase tracking-[0.14em] text-ash">
+                            {format(d, "MMM")}
+                          </span>
+                        )}
+                        {isToday && (
+                          <span className="text-[0.65rem] uppercase tracking-[0.14em] text-ink">
+                            Today
+                          </span>
+                        )}
+                      </div>
+                      {items.slice(0, limit).map(chip)}
+                      {items.length > limit && (
+                        <button
+                          type="button"
+                          className="link-quiet text-xs text-ink text-left px-1 w-fit"
+                          onClick={() => {
+                            setView("week");
+                            setAnchor(d);
+                          }}
+                        >
+                          +{items.length - limit} more
+                        </button>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </>
+        )}
 
         <p className="text-xs text-ash mt-4 flex flex-wrap gap-x-5 gap-y-1">
           <span>Deadlines: colored edge + status icon</span>

@@ -200,7 +200,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 3. Responsive down to 1024px (office desktops). Mobile is not required.
 4. Accessibility pass: focus rings, AA contrast, labels on every field, `prefers-reduced-motion`.
 5. Add a `README.md` with a one-command start (`pnpm i && pnpm db:reset && pnpm dev`) and a **"Paralegal test script"** (below).
-6. **Verification:** Run through the test script yourself in the browser, screenshot each step, and fix anything broken before handing off.
+6. **Verification:** Run through the test script yourself in the browser, screenshot each step, and fix anything broken before handing off. *(Found in the run-through: a deadline could be moved to a Sunday without notice. Added a non-blocking "that's a Sunday" heads-up; dates are still never moved automatically.)*
 
 **Total estimate: ~12 hours of Claude Code build time across 7 sessions.**
 

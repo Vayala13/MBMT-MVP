@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import { ErrorState, LoadingState } from "@/components/States";
 import { useNewTask } from "@/components/NewTaskDialog";
 import StatusBadge from "@/components/StatusBadge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -342,8 +343,7 @@ function Planner({
       <div className="flex items-end justify-between mb-4">
         <div>
           <div className="eyebrow mb-2">
-            Day planner · {DAY_START_LABEL} – {CLOCK_OUT_LABEL} · stay late to{" "}
-            {DAY_END_LABEL}
+            Day planner · {DAY_START_LABEL} – {CLOCK_OUT_LABEL}
           </div>
           <h2 id="planner-title" className="display text-3xl text-ink">
             {plannedMinutes
@@ -661,11 +661,9 @@ export default function Today() {
         </div>
 
         {mine.error ? (
-          <p role="alert" className="text-sm text-roof">
-            Couldn't load your tasks: {mine.error.message}
-          </p>
+          <ErrorState what="your tasks" error={mine.error} />
         ) : !mine.data ? (
-          <p className="text-sm text-ash">Loading your day…</p>
+          <LoadingState what="your day" />
         ) : (
           <div className="grid grid-cols-2 gap-12 items-start">
             <section

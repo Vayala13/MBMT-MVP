@@ -9,6 +9,7 @@ import CaseSelect from "@/components/CaseSelect";
 import { useApi } from "@/hooks/useApi";
 import { api, ApiError } from "@/lib/api";
 import { announceDataChanged } from "@/lib/dataEvents";
+import { useShortcut } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 import { CASE_STATUS_LABELS, type CallDirection } from "@shared/enums";
 import type { Case, CallLogCreated } from "@shared/types";
@@ -44,18 +45,6 @@ export function useLogCall(): LogCallApi {
   return ctx;
 }
 
-/** True when the keypress is going into a form field, so "C" should type a letter. */
-function isTyping(target: EventTarget | null) {
-  const el = target as HTMLElement | null;
-  if (!el) return false;
-  return (
-    el.isContentEditable ||
-    ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName) ||
-    el.getAttribute("role") === "combobox" ||
-    el.closest("[role=dialog]") !== null
-  );
-}
-
 const toLines = (text: string) =>
   text
     .split("\n")
@@ -72,17 +61,7 @@ export function LogCallProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Keyboard shortcut: C opens "Log a call" from anywhere.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() !== "c" || e.metaKey || e.ctrlKey || e.altKey)
-        return;
-      if (isTyping(e.target)) return;
-      e.preventDefault();
-      openLogCall();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [openLogCall]);
+  useShortcut("c", () => openLogCall());
 
   return (
     <LogCallContext.Provider value={{ openLogCall }}>

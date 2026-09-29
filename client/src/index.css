@@ -374,3 +374,42 @@
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
+
+/* ---- Accessibility (Phase 6) ---- */
+@layer base {
+  /* Visible keyboard focus everywhere: square ink ring, plaster on the navy sidebar. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
+  .bg-navy :focus-visible,
+  [role="alertdialog"] :focus-visible {
+    outline-color: var(--color-plaster);
+  }
+}
+@layer components {
+  /* Underline fields: focus thickens the line to 2px instead of a box. */
+  .field:focus-visible {
+    outline: none;
+    border-bottom-color: var(--color-ink);
+    box-shadow: inset 0 -1px 0 var(--color-ink);
+  }
+}
+/* Reduced motion: no fades, slides, pulses or smooth scrolling anywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Row hover (#e8e2d7) makes ash text 4.2:1; darken it to smoke (5.5:1) while hovered.
+   Unlayered on purpose so it beats the .text-ash utility. */
+.data-row:hover .text-ash,
+.hover-row:hover .text-ash {
+  color: var(--color-smoke);
+}

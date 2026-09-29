@@ -1,3 +1,4 @@
+import { ErrorState, LoadingState } from "@/components/States";
 import { useApi } from "@/hooks/useApi";
 import { useSession } from "@/lib/session";
 import { ROLE_LABELS } from "@shared/enums";
@@ -17,12 +18,8 @@ export default function PickUser() {
           Pick yourself. Your name goes on everything you change.
         </p>
 
-        {loading && <p className="text-sm text-ash">Loading team…</p>}
-        {error && (
-          <p role="alert" className="text-sm text-roof">
-            Couldn't load the team: {error.message}. Is the server running?
-          </p>
-        )}
+        {loading && !error && <LoadingState what="the team" />}
+        {error && <ErrorState what="the team" error={error} />}
 
         {users && (
           <ul className="max-w-xl flex flex-col gap-px bg-sand border border-sand">
@@ -31,11 +28,11 @@ export default function PickUser() {
                 <button
                   type="button"
                   onClick={() => pickUser(u)}
-                  className="group w-full stone-card hover:bg-[#e8e2d7] text-left p-5 flex items-center gap-4"
+                  className="group hover-row w-full stone-card hover:bg-[#e8e2d7] text-left p-5 flex items-center gap-4"
                 >
                   <span
                     aria-hidden="true"
-                    className="size-11 shrink-0 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em] transition-colors duration-300 group-hover:bg-aare"
+                    className="size-11 shrink-0 bg-navy text-plaster flex items-center justify-center text-xs tracking-[0.12em] transition-colors duration-300 group-hover:bg-[#2f6e6b]"
                   >
                     {u.initials}
                   </span>

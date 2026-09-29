@@ -15,8 +15,10 @@ import {
 import { useApi } from "@/hooks/useApi";
 import { api, ApiError } from "@/lib/api";
 import { announceDataChanged } from "@/lib/dataEvents";
+import { weekendWarning } from "@shared/dates";
 import { fmtDay } from "@/lib/format";
 import { useSession } from "@/lib/session";
+import { useShortcut } from "@/lib/shortcuts";
 import { cn } from "@/lib/utils";
 import { toDate } from "@shared/dashboard";
 import { ROLE_LABELS } from "@shared/enums";
@@ -51,6 +53,8 @@ export function NewTaskProvider({ children }: { children: React.ReactNode }) {
     setPreset(p);
     setOpen(true);
   }, []);
+  // Keyboard shortcut: N opens "New task" from anywhere.
+  useShortcut("n", () => openNewTask());
   return (
     <NewTaskContext.Provider value={{ openNewTask }}>
       {children}
@@ -163,7 +167,7 @@ function NewTaskDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl p-8 gap-6 bg-plaster max-h-[calc(100vh-4rem)] overflow-y-auto">
         <div>
-          <div className="eyebrow mb-2">New task</div>
+          <div className="eyebrow mb-2">New task · Shortcut: N</div>
           <DialogTitle className="display text-4xl text-ink font-extralight">
             {template ? `Start ${template.name}` : "Add a task"}
           </DialogTitle>
@@ -240,6 +244,11 @@ function NewTaskDialog({
                 value={dueDate}
                 onChange={e => setDueDate(e.target.value)}
               />
+              {weekendWarning(dueDate) && (
+                <p className="text-xs text-[#7c5f1c] mt-1.5" role="note">
+                  {weekendWarning(dueDate)}
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="nt-assignee" className="eyebrow">

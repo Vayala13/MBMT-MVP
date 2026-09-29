@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { api, ApiError } from "@/lib/api";
 import { announceDataChanged } from "@/lib/dataEvents";
+import { weekendWarning } from "@shared/dates";
 import { fmtDay } from "@/lib/format";
 import { DEADLINE_CHANGE_REASONS } from "@shared/enums";
 import type { Deadline } from "@shared/types";
@@ -99,6 +100,11 @@ export default function DeadlineDateDialog({
               value={date}
               onChange={e => setDate(e.target.value)}
             />
+            {weekendWarning(date) && (
+              <p className="text-xs text-[#7c5f1c] mt-1.5" role="note">
+                {weekendWarning(date)}
+              </p>
+            )}
           </div>
           <div>
             <label htmlFor="dl-reason" className="eyebrow">

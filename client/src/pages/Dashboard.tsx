@@ -1,4 +1,5 @@
 import AppShell from "@/components/AppShell";
+import { ErrorState, LoadingState } from "@/components/States";
 import CountdownList from "@/components/dashboard/CountdownList";
 import DeadlineStrip from "@/components/dashboard/DeadlineStrip";
 import ItemDrawer from "@/components/dashboard/ItemDrawer";
@@ -88,11 +89,9 @@ export default function Dashboard() {
         </header>
 
         {data.error ? (
-          <p role="alert" className="text-sm text-roof">
-            Couldn't load the dashboard: {data.error.message}
-          </p>
+          <ErrorState what="the dashboard" error={data.error} />
         ) : !data.ready ? (
-          <p className="text-sm text-ash">Loading dashboard…</p>
+          <LoadingState what="the dashboard" />
         ) : (
           <>
             <MetricRow m={view.metrics} />

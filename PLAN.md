@@ -153,7 +153,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 
 ### Phase 1: Data + access gate (≈ 1.5 hr)
 1. Drizzle schema, migrations, `seed.ts`, and a `pnpm db:reset` script.
-2. REST routes: `GET/POST/PATCH` for cases, deadlines, tasks, call_logs, notes, templates. Every write inserts an `activity` row and updates `cases.last_touched_*`.
+2. REST routes: `GET/POST/PATCH` for cases, deadlines, tasks, call_logs, notes, templates. Every write inserts an `activity` row and updates `cases.last_touched_*`. *(Exception, decided in Phase 5: moving a task on your own day planner is personal planning, so it writes no activity and does not count as touching the case. Otherwise "Plan my day" would make stale cases look active.)*
 3. **Proprietary acknowledgment screen** on first load. It says the info is proprietary and privileged and must stay inside the firm. The user must click "I acknowledge" (stored per session). Then a **role/user picker** replaces real login for the MVP.
 4. Add a persistent footer banner: "Prototype — demo data only."
 - **Done when:** the app boots through the gate, the picker sets the user, and the API returns seeded data.
@@ -173,21 +173,22 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 3. Sections: Deadlines (with change history shown inline, e.g. "moved from 10/2 → 10/16 · Rule 11 agreement") · Tasks (expandable subtasks) · **Call log** · Notes · Activity timeline.
 4. **Quick "Log a call" button**, reachable from anywhere (sidebar plus keyboard shortcut `C`): pick case, in/out, with whom, summary, follow-up checkbox. If follow-up is checked, it auto-creates a task.
 5. **Edit deadline date** requires a reason (dropdown incl. "Rule 11 agreement", "Court order", "Other") and writes to `deadline_changes`.
+6. *(Added after Phase 3 review)* The call log also captures **key points**, **action items** (each can become a task for the caller, due next business day) and an optional **pasted transcript**. A **"Simulate incoming call"** practice pop-up (fake numbers, demo cases) lets testers try an Answer → End call → pre-filled log flow. It is clearly labeled as simulated: no phone is connected.
 - **Done when:** logging a call on case A updates its "last touched" line and shows on the dashboard drawer.
 
 ### Phase 4: Today view + task templates (≈ 2.5 hr)
-1. **Today** page, left half: prioritized to-do (overdue first, then due today, then priority). Right half: time-block day planner (8 am–6 pm, 30-min slots). Drag a task into a slot to set `scheduled_block`.
+1. **Today** page, left half: prioritized to-do (overdue first, then due today, then priority). Right half: time-block day planner (8 am–6 pm, 30-min slots). *(From paralegal staff: official clock-out is 5 pm and nobody stays past 6 pm. "Plan my day" stops at 5 pm; the 5–6 pm hour is shaded "Staying late" and can be planned by hand.)*. Drag a task into a slot to set `scheduled_block`.
 2. **Templates page:** CRUD for task templates. Seed these starter templates (staff will refine them):
    - *MSJ Reply*: pull and label exhibits (A, B, C…), check in with attorney on progress, draft reply, cite-check every authority, final review, file.
    - *Motion to Compel*: review discovery responses for objections/omissions, draft motion, cite-check, attorney review, file.
    - *Deposition Outline*: gather petition/answer/discovery/client docs, draft outline, attorney review.
    - *Default Judgment*, *Answer to Petition*: placeholder subtasks, marked "needs staff input."
-3. Creating a task from a template auto-creates the subtasks with due dates offset from the parent due date.
+3. Creating a task from a template auto-creates the subtasks with due dates offset from the parent due date. *(Decided: a subtask that lands on a weekend moves to the Friday before. Staff can edit any date.)*
 4. Add a **"cite-check" subtask to every drafting template by default**. Firm policy: nothing reaches an attorney without it.
 - **Done when:** creating "MSJ Reply" due in 10 days creates all subtasks with correct dates (Vitest covers the offset math).
 
 ### Phase 5: Calendar + delegation + access view (≈ 2 hr)
-1. **Calendar:** 3-week grid by default (toggle 1 / 3 / month). Filter by person. Deadlines and scheduled tasks are both shown.
+1. **Calendar:** 3-week grid by default (toggle 1 / 3 / month). Filter by person. Deadlines and scheduled tasks are both shown. *(The 3-week view always runs through today + 20 days, padded to whole Mon–Sun weeks, so the third-week Monday is never cut off.)*
 2. **Delegation:** assign or reassign any task/deadline, and set an individual due date. "My work" filter across all pages.
 3. **Team & Access** page: read-only matrix of role × permission (view cases, edit deadlines, delete, manage templates, admin). Mark each item "proposed, confirm with Jesse/Tomas."
 4. In-app **reminder banner** on load: "You have N deadlines in the next 7 days, M overdue." No email or push in the MVP.
@@ -199,7 +200,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 3. Responsive down to 1024px (office desktops). Mobile is not required.
 4. Accessibility pass: focus rings, AA contrast, labels on every field, `prefers-reduced-motion`.
 5. Add a `README.md` with a one-command start (`pnpm i && pnpm db:reset && pnpm dev`) and a **"Paralegal test script"** (below).
-6. **Verification:** Run through the test script yourself in the browser, screenshot each step, and fix anything broken before handing off.
+6. **Verification:** Run through the test script yourself in the browser, screenshot each step, and fix anything broken before handing off. *(Found in the run-through: a deadline could be moved to a Sunday without notice. Added a non-blocking "that's a Sunday" heads-up; dates are still never moved automatically.)*
 
 **Total estimate: ~12 hours of Claude Code build time across 7 sessions.**
 
@@ -230,6 +231,8 @@ Collect answers to: *What would you use tomorrow? What's missing? What would you
 | Claude usage-limit / character-limit helper | Separate tool. Get the exact limits from Joseph first |
 | Real auth (SSO/passwords), hosting, backups | Decide after the pilot |
 | Email/Teams notifications | Staff ignore Microsoft reminders today, so in-app first |
+| Real phone integration: incoming-call pop-up with caller ID, answer in the browser | The firm has older office phones. Ask Jesse what the system is (plain phone lines, an office phone system with brand/model, or already internet-based). Full version needs an internet (VoIP) phone service, usually keeping the same number and a monthly per-user fee. Plain lines could instead get a caller-ID device for a pop-up only (no answering or recording). |
+| Call recording, automatic transcripts, AI key points and action items | Needs a recording (VoIP only), Tomas's sign-off on recording consent (laws differ by state; some require everyone on the call to agree), and a security review before privileged audio goes to any outside transcription or AI service |
 
 ---
 

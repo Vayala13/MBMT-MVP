@@ -96,20 +96,23 @@ describe("buildStrip", () => {
 });
 
 describe("countdown", () => {
-  it("lists open deadlines by date, overdue first, capped", () => {
+  it("lists open deadlines by date, overdue first, through the next 3 weeks", () => {
     const rows = countdown(
       [
         deadline("2026-10-05"),
         deadline("2026-09-25"),
         deadline("2026-09-30"),
         deadline("2026-09-20", { doneAt: "x" }),
+        deadline("2026-10-19"), // today + 20: last day of week 3
+        deadline("2026-10-20"), // today + 21: outside
       ],
-      today,
-      2
+      today
     );
     expect(rows.map(r => [r.deadline.dueDate, r.days, r.status])).toEqual([
       ["2026-09-25", -4, "overdue"],
       ["2026-09-30", 1, "soon"],
+      ["2026-10-05", 6, "soon"],
+      ["2026-10-19", 20, "ok"],
     ]);
   });
 });

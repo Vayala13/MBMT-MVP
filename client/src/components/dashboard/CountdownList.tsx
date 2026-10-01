@@ -24,11 +24,11 @@ export default function CountdownList({
     <section aria-labelledby="countdown-title">
       <div className="eyebrow mb-2">Countdown</div>
       <h2 id="countdown-title" className="display text-3xl text-ink mb-5">
-        Next {rows.length} deadlines
+        Next 3 weeks
       </h2>
       {rows.length === 0 ? (
         <p className="font-serif italic text-xl text-smoke">
-          No open deadlines. A quiet stretch.
+          Nothing due in the next 3 weeks. A quiet stretch.
         </p>
       ) : (
         <ol className="border-t border-sand">

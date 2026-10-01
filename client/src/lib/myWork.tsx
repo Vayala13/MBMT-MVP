@@ -11,8 +11,8 @@ import {
 } from "react";
 
 /**
- * "My work" filter, shared by every page. Kept for the browser session,
- * per user (switching users starts with it off).
+ * "My work" filter, shared by every page. On by default; a user's choice is
+ * kept for the browser session, per user.
  */
 const KEY = (userId: number) => `mbmt.myWork.${userId}`;
 
@@ -30,13 +30,13 @@ export function MyWorkProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<Record<number, boolean>>(() => {
     try {
       return user
-        ? { [user.id]: sessionStorage.getItem(KEY(user.id)) === "on" }
+        ? { [user.id]: sessionStorage.getItem(KEY(user.id)) !== "off" }
         : {};
     } catch {
       return {};
     }
   });
-  const myWork = user ? Boolean(state[user.id]) : false;
+  const myWork = user ? (state[user.id] ?? true) : false;
   const setMyWork = useCallback(
     (on: boolean) => {
       if (!user) return;

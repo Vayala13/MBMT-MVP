@@ -72,12 +72,9 @@ export default function Cases() {
     <AppShell title="Cases">
       <div className="max-w-[1180px] animate-fade-in-up">
         <div className="eyebrow mb-3">Cases</div>
-        <h1 className="display text-5xl text-ink mb-3">
+        <h1 className="display text-5xl text-ink mb-10">
           Every matter, one list.
         </h1>
-        <p className="font-serif italic text-2xl text-smoke mb-10">
-          Replaces the case list and active cases spreadsheets.
-        </p>
         {myWork && (
           <p className="text-sm text-smoke -mt-6 mb-8 flex items-center gap-2">
             <UserCheck

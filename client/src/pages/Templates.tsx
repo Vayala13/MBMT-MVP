@@ -313,12 +313,9 @@ export default function Templates() {
         <div className="flex items-end justify-between gap-6 mb-10">
           <div>
             <div className="eyebrow mb-3">Task templates</div>
-            <h1 className="display text-5xl text-ink mb-3">
+            <h1 className="display text-5xl text-ink">
               Stop rewriting the same subtasks.
             </h1>
-            <p className="font-serif italic text-2xl text-smoke">
-              Starter templates. Staff should refine them.
-            </p>
           </div>
           <button
             type="button"

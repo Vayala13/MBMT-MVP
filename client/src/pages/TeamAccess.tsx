@@ -1,6 +1,7 @@
 import AppShell from "@/components/AppShell";
-import { ErrorState, LoadingState } from "@/components/States";
+import { EmptyState, ErrorState, LoadingState } from "@/components/States";
 import { useApi } from "@/hooks/useApi";
+import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 import { PROPOSED_PERMISSIONS, type Access } from "@shared/access";
 import { ROLE_LABELS, USER_ROLES } from "@shared/enums";
@@ -17,16 +18,34 @@ const CELL: Record<
 };
 
 export default function TeamAccess() {
-  const { data: users, error } = useApi<User[]>("/users");
+  const { user } = useSession();
+  const isAdmin = user?.role === "admin";
+  const { data: users, error } = useApi<User[]>(isAdmin ? "/users" : null);
+
+  // Hidden from the sidebar for everyone else. Not security: the prototype
+  // has no passwords, so anyone can pick the IT admin profile.
+  if (!isAdmin) {
+    return (
+      <AppShell title="App permissions">
+        <div className="max-w-[1180px] animate-fade-in-up">
+          <div className="eyebrow mb-3">App permissions</div>
+          <h1 className="display text-5xl text-ink mb-8">IT admin only.</h1>
+          <EmptyState>
+            This page is for the IT admin. Ask Jesse if you have a question
+            about what you can do in the app.
+          </EmptyState>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
-    <AppShell title="Team & Access">
+    <AppShell title="App permissions">
       <div className="max-w-[1180px] animate-fade-in-up">
-        <div className="eyebrow mb-3">Team &amp; Access</div>
-        <h1 className="display text-5xl text-ink mb-3">Who can do what.</h1>
-        <p className="font-serif italic text-2xl text-smoke mb-8">
-          A proposal, not a rule yet.
-        </p>
+        <div className="eyebrow mb-3">App permissions</div>
+        <h1 className="display text-5xl text-ink mb-8">
+          Who can do what in this app.
+        </h1>
 
         <p className="stone-card status-soon p-5 text-sm text-smoke flex gap-3 mb-12 max-w-3xl">
           <TriangleAlert
@@ -46,7 +65,7 @@ export default function TeamAccess() {
 
         <section aria-labelledby="matrix-title" className="mb-16">
           <h2 id="matrix-title" className="display text-3xl text-ink mb-5">
-            Access by role
+            Permissions by role
           </h2>
           <table className="w-full text-sm">
             <caption className="sr-only">

@@ -190,7 +190,7 @@ Each phase ends with a **checkpoint**: run the app, take screenshots, stop, and 
 ### Phase 5: Calendar + delegation + access view (≈ 2 hr)
 1. **Calendar:** 3-week grid by default (toggle 1 / 3 / month). Filter by person. Deadlines and scheduled tasks are both shown. *(The 3-week view always runs through today + 20 days, padded to whole Mon–Sun weeks, so the third-week Monday is never cut off.)*
 2. **Delegation:** assign or reassign any task/deadline, and set an individual due date. "My work" filter across all pages.
-3. **Team & Access** page: read-only matrix of role × permission (view cases, edit deadlines, delete, manage templates, admin). Mark each item "proposed, confirm with Jesse/Tomas."
+3. **Team & Access** page: read-only matrix of role × permission (view cases, edit deadlines, delete, manage templates, admin). Mark each item "proposed, confirm with Jesse/Tomas." *(Decided later: renamed "App permissions" so it's clear it means permissions inside this app, and shown only to the IT admin to keep everyone else's sidebar simple. Hiding it is not security; real sign-in comes in v2.)*
 4. In-app **reminder banner** on load: "You have N deadlines in the next 7 days, M overdue." No email or push in the MVP.
 - **Done when:** reassigning a task moves it between users' "My work" lists and writes activity.
 

@@ -615,8 +615,6 @@ export default function Today() {
     );
   };
 
-  const overdue = groups.find(x => x.g === "overdue")?.rows.length ?? 0;
-  const dueToday = groups.find(x => x.g === "today")?.rows.length ?? 0;
 
   return (
     <AppShell title="Today">
@@ -627,12 +625,6 @@ export default function Today() {
               Today · {format(today, "EEEE, MMMM d")}
             </div>
             <h1 className="display text-5xl text-ink">Plan your day.</h1>
-            {mine.data && (
-              <p className="font-serif italic text-2xl text-smoke mt-3">
-                {overdue} overdue · {dueToday} due today · {todo.length} open in
-                all
-              </p>
-            )}
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button

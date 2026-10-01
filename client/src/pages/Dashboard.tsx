@@ -4,7 +4,6 @@ import CountdownList from "@/components/dashboard/CountdownList";
 import DeadlineStrip from "@/components/dashboard/DeadlineStrip";
 import ItemDrawer from "@/components/dashboard/ItemDrawer";
 import MetricRow from "@/components/dashboard/MetricRow";
-import PendingList from "@/components/dashboard/PendingList";
 import StaleCases from "@/components/dashboard/StaleCases";
 import type { DrawerItem } from "@/components/dashboard/types";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -14,7 +13,6 @@ import {
   buildStrip,
   countdown,
   metrics,
-  upcomingPending,
   staleCases,
 } from "@shared/dashboard";
 import { format, startOfDay } from "date-fns";
@@ -47,16 +45,8 @@ export default function Dashboard() {
       strip: buildStrip(scoped.deadlines, today),
       countdown: rows,
       stale: staleCases(scoped.cases, today),
-      month: upcomingPending(scoped.tasks, scoped.deadlines, today),
-      overdueDeadlines: scoped.deadlines.filter(
-        d => !d.doneAt && d.dueDate < format(today, "yyyy-MM-dd")
-      ).length,
     };
   }, [scoped, today]);
-
-  const soon = view.strip
-    .slice(0, 8)
-    .reduce((n, d) => n + d.deadlines.length, 0);
 
   return (
     <AppShell title="Dashboard">
@@ -76,14 +66,7 @@ export default function Dashboard() {
                 aria-hidden="true"
               />
               My work is on: only your deadlines, tasks and cases. Turn it off
-              in the top bar to see the whole firm.
-            </p>
-          )}
-          {data.ready && (
-            <p className="font-serif italic text-2xl text-smoke mt-3">
-              {view.overdueDeadlines} overdue · {soon} due in the next 7 days ·{" "}
-              {view.stale.length} stale case
-              {view.stale.length === 1 ? "" : "s"}
+              in the sidebar to see the whole firm.
             </p>
           )}
         </header>
@@ -119,13 +102,6 @@ export default function Dashboard() {
                 />
               </div>
             </div>
-            <PendingList
-              groups={view.month}
-              today={today}
-              caseById={data.caseById}
-              userById={data.userById}
-              onOpen={setDrawer}
-            />
           </>
         )}
       </div>

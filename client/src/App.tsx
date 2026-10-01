@@ -27,7 +27,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/today" component={Today} />
       <Route path="/calendar" component={Calendar} />
-      <Route path="/team" component={TeamAccess} />
+      <Route path="/permissions" component={TeamAccess} />
       <Route path="/templates" component={Templates} />
       <Route path="/cases" component={Cases} />
       <Route path="/cases/:id">

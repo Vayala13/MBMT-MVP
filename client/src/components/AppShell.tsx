@@ -124,8 +124,36 @@ export default function AppShell({
             Simulate incoming call
           </button>
         </div>
+        {user && (
+          <div className="px-6 pb-6">
+            <button
+              type="button"
+              aria-pressed={myWork}
+              onClick={() => setMyWork(!myWork)}
+              title="Show only cases, tasks and deadlines that are yours"
+              className={cn(
+                "w-full flex items-center justify-between gap-2 border px-4 py-2 text-[0.7rem] tracking-[0.2em] uppercase transition-colors duration-300",
+                myWork
+                  ? "bg-plaster border-plaster text-navy hover:bg-sandstone-light"
+                  : "border-plaster/25 text-sandstone-light hover:text-plaster hover:bg-plaster/5"
+              )}
+            >
+              <span className="flex items-center gap-2.5">
+                <UserCheck
+                  className="size-3.5"
+                  strokeWidth={1.5}
+                  aria-hidden="true"
+                />
+                My work
+              </span>
+              {myWork ? "On" : "Off"}
+            </button>
+          </div>
+        )}
         <nav aria-label="Main" className="flex flex-col gap-0.5">
-          {NAV_ITEMS.map(item => (
+          {NAV_ITEMS.filter(
+            item => !item.roles || (user && item.roles.includes(user.role))
+          ).map(item => (
             <NavLink key={item.href} {...item} />
           ))}
         </nav>
@@ -139,25 +167,6 @@ export default function AppShell({
           <div className="eyebrow">{title}</div>
           {user && (
             <div className="flex items-center gap-6">
-              <button
-                type="button"
-                aria-pressed={myWork}
-                onClick={() => setMyWork(!myWork)}
-                title="Show only cases, tasks and deadlines that are yours"
-                className={cn(
-                  "inline-flex items-center gap-2 border px-3 py-1.5 text-[0.68rem] tracking-[0.2em] uppercase transition-colors duration-300",
-                  myWork
-                    ? "bg-navy border-navy text-plaster"
-                    : "border-sand text-smoke hover:border-ink hover:text-ink"
-                )}
-              >
-                <UserCheck
-                  className="size-3.5"
-                  strokeWidth={1.5}
-                  aria-hidden="true"
-                />
-                My work {myWork ? "· on" : "· off"}
-              </button>
               <div className="flex items-center gap-3">
                 <div className="text-right leading-tight">
                   <div className="text-sm text-ink">{user.name}</div>

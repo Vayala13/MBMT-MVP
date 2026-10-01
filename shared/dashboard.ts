@@ -9,7 +9,6 @@ import type { Case, Deadline, Task } from "./types";
 
 /** The strip covers today plus the next 20 days: 3 weeks of 7 days. */
 export const STRIP_DAYS = 21;
-export const COUNTDOWN_LIMIT = 10;
 
 export const toDate = (ymd: string) => parseISO(ymd);
 export const toYmd = (d: Date) => format(d, "yyyy-MM-dd");
@@ -58,16 +57,15 @@ export type CountdownRow = {
   status: Exclude<Status, "stale">;
 };
 
-/** Next open deadlines by date. Overdue ones come first because they are earliest. */
-export function countdown(
-  deadlines: Deadline[],
-  today: Date,
-  limit = COUNTDOWN_LIMIT
-): CountdownRow[] {
+/**
+ * Open deadlines due within the same 3 weeks as the strip, by date. Overdue
+ * ones are kept and come first because they are earliest.
+ */
+export function countdown(deadlines: Deadline[], today: Date): CountdownRow[] {
+  const last = toYmd(addDays(today, STRIP_DAYS - 1));
   return deadlines
-    .filter(isOpenDeadline)
+    .filter(d => isOpenDeadline(d) && d.dueDate <= last)
     .sort(byDueThenId(d => d.dueDate))
-    .slice(0, limit)
     .map(deadline => {
       const due = toDate(deadline.dueDate);
       return {

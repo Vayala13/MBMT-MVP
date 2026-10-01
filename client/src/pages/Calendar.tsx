@@ -218,10 +218,7 @@ export default function Calendar() {
     <AppShell title="Calendar">
       <div className="max-w-[1180px] animate-fade-in-up">
         <div className="eyebrow mb-3">Calendar</div>
-        <h1 className="display text-5xl text-ink mb-3">{title}</h1>
-        <p className="font-serif italic text-2xl text-smoke mb-8">
-          Deadlines, tasks due and planned time, all in one place.
-        </p>
+        <h1 className="display text-5xl text-ink mb-8">{title}</h1>
 
         {/* Controls */}
         <div className="flex flex-wrap items-end gap-x-8 gap-y-4 mb-6">

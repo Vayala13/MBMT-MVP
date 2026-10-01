@@ -1,3 +1,4 @@
+import { ymd } from "@shared/dates";
 import { USER_HEADER } from "@shared/types";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
@@ -132,7 +133,8 @@ describe("writes", () => {
       status: "open",
       priority: 1,
     });
-    expect(t.dueDate > new Date().toISOString().slice(0, 10)).toBe(true);
+    // Local date, same as the server; toISOString() is UTC and flips early in US evenings.
+    expect(t.dueDate > ymd(new Date())).toBe(true);
 
     const plain = await api("POST", "/call-logs", {
       caseId: 3,

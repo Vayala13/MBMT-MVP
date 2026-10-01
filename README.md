@@ -49,9 +49,9 @@ No build tools (Xcode, Visual Studio) are needed. The database library ships rea
 | **Calendar** | 1 week / 3 weeks / month, filter by person. Deadlines, tasks due and planned time. |
 | **Cases** | Active, intake, referred-out and closed cases. Filters, stale-only, sort by last touched. Each case page has deadlines (with move history), tasks, calls, notes and activity. |
 | **Templates** | Task templates (MSJ Reply, Motion to Compel…). Subtasks date themselves; drafting templates always include a cite-check. |
-| **Team & Access** | *Proposed* permissions by role, to confirm with Jesse and Tomas. Not enforced in the prototype. |
+| **App permissions** | IT admin only (pick the IT admin user to see it). *Proposed* permissions by role inside this app, to confirm with Jesse and Tomas. Not enforced in the prototype. |
 
-**Anywhere:** Log a call (key points, action items, transcript), Simulate incoming call (practice only), the **My work** switch in the top bar, and a reminder banner for deadlines in the next 7 days.
+**Anywhere:** Log a call (key points, action items, transcript), Simulate incoming call (practice only), the **My work** switch in the sidebar (on by default), and a reminder banner for deadlines in the next 7 days.
 
 ### Keyboard shortcuts
 

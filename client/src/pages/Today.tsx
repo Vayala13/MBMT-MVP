@@ -621,9 +621,7 @@ export default function Today() {
       <div className="max-w-[1180px] animate-fade-in-up">
         <div className="flex items-end justify-between gap-6 mb-12">
           <div>
-            <div className="eyebrow mb-3">
-              Today · {format(today, "EEEE, MMMM d")}
-            </div>
+            <div className="eyebrow mb-3">{format(today, "EEEE, MMMM d")}</div>
             <h1 className="display text-5xl text-ink">Plan your day.</h1>
           </div>
           <div className="flex items-center gap-3 shrink-0">
